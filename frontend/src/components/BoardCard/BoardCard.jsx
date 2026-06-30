@@ -1,19 +1,14 @@
+import { Link } from 'react-router-dom';
 import CategoryBadge from '../CategoryBadge/CategoryBadge';
 import DeleteButton from '../DeleteButton/DeleteButton';
 import './BoardCard.css';
 
-function BoardCard({ board, onClick, onDelete }) {
-  const handleNavigate = (e) => {
-    e.preventDefault();
-    onClick?.(board.id);
-  };
-
+function BoardCard({ board, onDelete }) {
   return (
     <article className="board-card">
-      <a
-        href={`/boards/${board.id}`}
+      <Link
+        to={`/boards/${board.id}`}
         className="board-card__link"
-        onClick={handleNavigate}
         aria-label={`Open board ${board.title}`}
       >
         <div className="board-card__image-wrap">
@@ -25,7 +20,7 @@ function BoardCard({ board, onClick, onDelete }) {
             <CategoryBadge category={board.category} />
           </div>
         </div>
-      </a>
+      </Link>
       <DeleteButton
         onClick={() => onDelete?.(board.id)}
         className="board-card__delete"

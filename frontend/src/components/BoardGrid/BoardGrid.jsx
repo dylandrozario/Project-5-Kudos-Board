@@ -2,7 +2,7 @@ import BoardCard from '../BoardCard/BoardCard';
 import EmptyState from '../EmptyState/EmptyState';
 import './BoardGrid.css';
 
-function BoardGrid({ boards, isLoading = false, onBoardClick, onDeleteBoard }) {
+function BoardGrid({ boards, isLoading = false, onDeleteBoard }) {
   if (isLoading) {
     return <div className="board-grid__loading">Loading boards…</div>;
   }
@@ -19,12 +19,7 @@ function BoardGrid({ boards, isLoading = false, onBoardClick, onDeleteBoard }) {
   return (
     <section className="board-grid" aria-label="Boards">
       {boards.map((board) => (
-        <BoardCard
-          key={board.id}
-          board={board}
-          onClick={onBoardClick}
-          onDelete={onDeleteBoard}
-        />
+        <BoardCard key={board.id} board={board} onDelete={onDeleteBoard} />
       ))}
     </section>
   );

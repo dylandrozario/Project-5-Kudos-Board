@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import BoardBanner from '../../components/BoardBanner/BoardBanner';
 import CardGrid from '../../components/CardGrid/CardGrid';
@@ -21,7 +22,12 @@ function sortCards(cards) {
   });
 }
 
-function BoardPage({ boardId, onNavigateHome }) {
+function BoardPage() {
+  const navigate = useNavigate();
+  const params = useParams();
+  const boardId = Number(params.boardId);
+  const goHome = () => navigate('/');
+
   const initialBoard = useMemo(() => {
     const meta = MOCK_BOARDS.find((b) => b.id === boardId);
     if (!meta) return null;
@@ -46,7 +52,7 @@ function BoardPage({ boardId, onNavigateHome }) {
       <div className="board-page board-page--missing">
         <Header
           showBackButton
-          onBack={onNavigateHome}
+          onBack={goHome}
           searchInput=""
           onSearchInputChange={() => {}}
           onSearchSubmit={() => {}}
@@ -56,7 +62,7 @@ function BoardPage({ boardId, onNavigateHome }) {
         />
         <main className="board-page__missing">
           <h2>Board not found</h2>
-          <button type="button" onClick={onNavigateHome}>← Back to all boards</button>
+          <button type="button" onClick={goHome}>← Back to all boards</button>
         </main>
         <Footer />
       </div>
@@ -139,7 +145,7 @@ function BoardPage({ boardId, onNavigateHome }) {
     <div className="board-page">
       <Header
         showBackButton
-        onBack={onNavigateHome}
+        onBack={goHome}
         searchInput=""
         onSearchInputChange={() => {}}
         onSearchSubmit={() => {}}

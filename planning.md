@@ -1190,6 +1190,23 @@ Only needed if implementing the stretch Pinned Cards feature.
 
 ---
 
+## Deployment Notes
+
+### SPA fallback for client-side routes (react-router-dom)
+
+The frontend uses `react-router-dom`'s `<BrowserRouter>`, which means non-root URLs like `/boards/3` are handled entirely on the client. The browser still asks the host for that path on a hard refresh, share, or bookmark — and unless the host knows to return `index.html` for any unknown path, the user will get a 404.
+
+- **Local dev (Vite):** Vite's dev server does this automatically. No config needed — `npm run dev` "just works" on any route.
+- **Production:** the static host needs a rewrite rule. Concretely:
+  - **Render (static site):** add a rewrite rule under *Redirects/Rewrites* — `Source: /*` → `Destination: /index.html` → type **Rewrite**.
+  - **Vercel:** add a `vercel.json` at the project root with `{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }`.
+  - **Netlify:** create `frontend/public/_redirects` containing `/*    /index.html   200`.
+  - **GitHub Pages or any plain static host without rewrite support:** switch from `<BrowserRouter>` to `<HashRouter>` (URLs become `/#/boards/3`, no host config needed).
+
+If the README's "Deployment" stretch goal is pursued and `/boards/:id` 404s on refresh after deploy, this is the cause.
+
+---
+
 # Section 2: API Contracts
 
 Define every endpoint the frontend will consume. For each route:

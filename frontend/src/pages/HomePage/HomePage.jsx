@@ -8,7 +8,7 @@ import Footer from '../../components/Footer/Footer';
 import { MOCK_BOARDS, CATEGORIES } from '../../data/mockBoards';
 import './HomePage.css';
 
-function HomePage({ onBoardClick }) {
+function HomePage() {
   const [boards, setBoards] = useState(MOCK_BOARDS);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,10 +59,6 @@ function HomePage({ onBoardClick }) {
     setBoards(boards.filter((b) => b.id !== id));
   };
 
-  const handleBoardClick = (id) => {
-    onBoardClick?.(id);
-  };
-
   return (
     <div className="home-page">
       <Header
@@ -79,11 +75,7 @@ function HomePage({ onBoardClick }) {
         selected={selectedCategory}
         onSelect={setSelectedCategory}
       />
-      <BoardGrid
-        boards={filteredBoards}
-        onBoardClick={handleBoardClick}
-        onDeleteBoard={handleDeleteBoard}
-      />
+      <BoardGrid boards={filteredBoards} onDeleteBoard={handleDeleteBoard} />
       <CreateBoardModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
