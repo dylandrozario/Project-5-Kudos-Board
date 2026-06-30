@@ -1,0 +1,51 @@
+.delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: var(--bg-surface);
+  color: #d23434;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.delete-btn:hover {
+  background: #d23434;
+  color: #fff;
+}
+
+.delete-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.delete-btn__label {
+  display: inline;
+}
+
+.delete-btn--icon-only {
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+.delete-btn--icon-only:hover {
+  background: rgba(210, 52, 52, 0.16);
+  color: #ff6a6a;
+}
+
+.delete-btn--icon-only svg {
+  width: 15px;
+  height: 15px;
+}

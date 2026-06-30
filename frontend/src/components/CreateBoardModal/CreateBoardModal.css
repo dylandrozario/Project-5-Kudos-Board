@@ -1,0 +1,48 @@
+.create-board-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.create-board-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.create-board-form__field input,
+.create-board-form__field select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.create-board-form__field input::placeholder {
+  color: var(--text-muted);
+}
+
+.create-board-form__field input:focus,
+.create-board-form__field select:focus {
+  border-color: #ff6a3d;
+  box-shadow: 0 0 0 2px rgba(255, 106, 61, 0.18);
+}
+
+.create-board-form__error {
+  margin: 0;
+  color: #ff6a6a;
+  font-size: 13px;
+}
+
+.create-board-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}

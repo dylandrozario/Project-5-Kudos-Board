@@ -1,0 +1,45 @@
+.board-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+.board-page > footer {
+  margin-top: auto;
+}
+
+.board-page--missing {
+  background: var(--bg-app);
+}
+
+.board-page__missing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.board-page__missing h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+.board-page__missing button {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.board-page__missing button:hover {
+  background: var(--bg-hover);
+}

@@ -1,0 +1,25 @@
+.banner {
+  background: linear-gradient(135deg, #ffe5dc 0%, #fff3ed 100%);
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1d3c4;
+}
+
+.banner__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.banner__title {
+  margin: 0;
+  font-size: 14px;
+  color: #1f1f1f;
+  font-weight: 700;
+}
+
+.banner__subtitle {
+  margin: 0;
+  color: #6a4a3a;
+  font-size: 13px;
+}

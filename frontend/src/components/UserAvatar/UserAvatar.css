@@ -1,0 +1,15 @@
+.user-avatar {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar:focus-visible {
+  outline: 2px solid #ff6a3d;
+  outline-offset: 2px;
+}

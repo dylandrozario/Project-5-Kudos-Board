@@ -1,0 +1,10 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+.home-page > footer {
+  margin-top: auto;
+}

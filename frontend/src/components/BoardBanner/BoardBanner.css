@@ -1,0 +1,57 @@
+.board-banner {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  overflow: hidden;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.board-banner__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.board-banner__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.board-banner__content {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 20px;
+  min-height: 200px;
+}
+
+.board-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.board-banner__category {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.board-banner__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.board-banner__count {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}

@@ -1,0 +1,32 @@
+.pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.pin-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.pin-btn--active {
+  color: #ff6a3d;
+}
+
+.pin-btn--active:hover {
+  background: rgba(255, 106, 61, 0.14);
+  color: #ff6a3d;
+}
+
+.pin-btn svg {
+  width: 14px;
+  height: 14px;
+}

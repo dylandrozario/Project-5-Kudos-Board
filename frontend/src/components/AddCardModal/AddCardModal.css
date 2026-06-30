@@ -1,0 +1,50 @@
+.add-card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.add-card-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.add-card-form__field input,
+.add-card-form__field textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+  resize: vertical;
+}
+
+.add-card-form__field input::placeholder,
+.add-card-form__field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.add-card-form__field input:focus,
+.add-card-form__field textarea:focus {
+  border-color: #ff6a3d;
+  box-shadow: 0 0 0 2px rgba(255, 106, 61, 0.18);
+}
+
+.add-card-form__error {
+  margin: 0;
+  color: #ff6a6a;
+  font-size: 13px;
+}
+
+.add-card-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}

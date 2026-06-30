@@ -1,0 +1,14 @@
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: #ff6a3d;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+
+.logo__line {
+  display: block;
+}
