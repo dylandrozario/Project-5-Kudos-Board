@@ -9,14 +9,21 @@ node_modules/
 # Logs
 *.log
 npm-debug.log*
-
-# Prisma
-prisma/*.db
-prisma/migrations/dev.db*
+yarn-debug.log*
+yarn-error.log*
 
 # OS files
 .DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
 
 # Build output
 dist/
 build/
+
+# Misc
+*.local
