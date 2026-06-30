@@ -1,25 +1,13 @@
 # Section 1: Component Architecture
 
-Define every React component the app needs. For each component:
-
-- Responsibility: What does this component do? (one sentence)
-- Renders: What HTML elements or child components does it display?
-- Props: What data does it receive, and from where?
-- State: Does it manage any state? If so, what?
-- Interactions: What user actions does it handle?
-
-Also document the parent-child hierarchy — which components render which.
-
 ## Schema & Spec Alignment
 
 The component spec below assumes the Prisma models exactly as defined:
 
-- `User { id: number, email, username?, password, boards[], cards[], comments[] }`  (`username` is optional/nullable in the schema)
-- `Board { id: number, imageURL, authorId, title, category, cards[] }`
-- `Card { id: number, title, description?, pinned, pinnedAt, gifUrl, upvotes, authorId, boardId, comments[] }`
-- `Comment { id: number, message, cardId, authorId }`
-
-…and follows the explicit feature list in `README.md`. Consequences for the components:
+- `User { id, email, username?, password, boards[], cards[], comments[], createdAt, updatedAt}`  (`username` is optional/nullable in the schema)
+- `Board { id, imageURL, authorId, title, category, cards[], createdAt, updatedAt}`
+- `Card { id, title, description?, pinned, pinnedAt, gifUrl, upvotes, authorId, boardId, comments[], createdAt, updatedAt}`
+- `Comment { id, message, cardId, authorId, createdAt, updatedAt}`
 
 - All IDs are `number`, not `string`.
 - **Home Page** must render Header, Banner, SearchBar, the boards grid, and a Footer (per README).
