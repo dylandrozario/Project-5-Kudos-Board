@@ -8,14 +8,14 @@ const CATEGORY_OPTIONS = ['Celebration', 'Thank you', 'Inspiration'];
 function CreateBoardModal({ isOpen, onClose, onCreate }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
-  const [authorName, setAuthorName] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const reset = () => {
     setTitle('');
     setCategory(CATEGORY_OPTIONS[0]);
-    setAuthorName('');
+    setImageUrl('');
     setError(null);
   };
 
@@ -36,7 +36,7 @@ function CreateBoardModal({ isOpen, onClose, onCreate }) {
       await onCreate?.({
         title: title.trim(),
         category,
-        authorName: authorName.trim() || undefined,
+        imageUrl: imageUrl.trim() || undefined,
       });
       reset();
       onClose?.();
@@ -73,12 +73,12 @@ function CreateBoardModal({ isOpen, onClose, onCreate }) {
         </label>
 
         <label className="create-board-form__field">
-          <span>Author (optional)</span>
+          <span>Image URL (optional)</span>
           <input
-            type="text"
-            value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-            placeholder="Leave blank to post as Guest"
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://…"
           />
         </label>
 
