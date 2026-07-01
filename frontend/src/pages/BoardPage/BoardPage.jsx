@@ -76,15 +76,35 @@ function BoardPage() {
     setBoard((prev) => (prev ? { ...prev, cards: mutator(prev.cards) } : prev));
   };
 
-  const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
+  // Given an authorId, fetch and return the User row so `author.username`
+  // is available on newly-created cards/comments (backend create responses
+  // return only `authorId`, not the nested author object).
+  const fetchAuthor = async (authorId) => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/users/${authorId}`);
+      return res.data;
+    } catch (err) {
+      console.error('Failed to fetch author:', err);
+      return { id: authorId, username: 'Guest' };
+    }
+  };
+
+  const handleAddCard = async ({ title, description, gifUrl }) => {
+    // No real auth yet — everything created anonymously is attributed to Guest (id 1).
+    const authorId = currentUser.id;
     const response = await axios.post(`${API_BASE_URL}/cards`, {
       title,
       description,
       gifUrl,
       boardId,
-      authorName,
+      authorId,
     });
-    const created = { ...response.data, comments: response.data.comments ?? [] };
+    const author = await fetchAuthor(response.data.authorId ?? authorId);
+    const created = {
+      ...response.data,
+      author,
+      comments: response.data.comments ?? [],
+    };
     updateCards((cards) => [created, ...cards]);
   };
 
@@ -143,14 +163,17 @@ function BoardPage() {
     }
   };
 
-  const handleAddComment = async (cardId, message, authorName) => {
+  const handleAddComment = async (cardId, message) => {
+    const authorId = currentUser.id;
     const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, {
       message,
-      authorName,
+      authorId,
     });
+    const author = await fetchAuthor(response.data.authorId ?? authorId);
+    const newComment = { ...response.data, author };
     updateCards((cards) =>
       cards.map((c) =>
-        c.id === cardId ? { ...c, comments: [...c.comments, response.data] } : c,
+        c.id === cardId ? { ...c, comments: [...c.comments, newComment] } : c,
       ),
     );
   };

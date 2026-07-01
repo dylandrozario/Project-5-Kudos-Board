@@ -64,7 +64,7 @@ async function updateCard(req, res) {
     if (upvotes !== undefined) data.upvotes = upvotes;
     if (pinned !== undefined) {
       data.pinned = pinned;
-      data.pinnedAt = new Date()
+      data.pinnedAt = pinned ? new Date() : null;
     }
 
     const card = await prisma.card.update({
