@@ -14,6 +14,9 @@
   "author": "Dylan, Emmanuel, Semir",
   "type": "commonjs",
   "main": "index.js",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
