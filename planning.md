@@ -1212,11 +1212,8 @@ Success Response:
 - Body Example:
 {
   "id": 1,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z",
   "email": "random@gmail.com",
   "username": "bomb.com",
-  "password": "iamtheone"
 }
 
 Error Response:
@@ -1240,11 +1237,8 @@ Success Response:
 - Body Example:
 {
   "id": 1,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z",
   "email": "example@gmail.com",
   "username": "exampleuser",
-  "password": "examplepassword",
   "boards": [],
   "cards": [],
   "comments": []
@@ -1271,11 +1265,8 @@ Success Response:
 - Body Example (returns the full updated user):
 {
   "id": 1,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-11-01T10:00:00Z",
   "email": "new_email@gmail.com",
-  "username": "exampleuser",
-  "password": "iamtheone"
+  "username": "exampleuser"
 }
 
 Error Response:
@@ -1293,15 +1284,12 @@ Delete one specific user from the database.
 
 Success Response:
 - Status Code: 200
-```json
+
 { "message": "User now deleted" }
-```
 
 Error Response:
 - Status Code: 404
-```json
 { "error": "User not found." }
-```
 
 Note: deleting a user cascades (onDelete: Cascade) to their boards, cards, and comments. NEVER delete the Guest user (id 1).
 
@@ -1322,21 +1310,13 @@ Authenticate a user and return their profile.
 Success Response:
 - Status Code: 200
 - Body Example (password omitted):
-```json
 {
-  "id": 1,
-  "email": "example@gmail.com",
-  "username": "exampleuser",
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z"
+  "message" : "{user} logged in successfully!"
 }
-```
 
 Error Response:
 - Status Code: 401
-```json
 { "error": "Invalid credentials." }
-```
 
 ---
 
@@ -1351,7 +1331,6 @@ Get the list of boards. Supports search, category filter, and the "Recent" view.
   - `category` — filter by `Board.category`; a value of `All` is ignored (returns everything).
   - `title` — case-insensitive substring match on `Board.title`.
   - `sort` — when set to `recent`, returns the 6 most recently created boards.
-  - `limit` — cap the number of boards returned.
 
 Success Response:
 - Status Code: 200
@@ -1360,7 +1339,6 @@ Success Response:
   {
     "id": 1,
     "createdAt": "2026-10-31T15:30:00Z",
-    "updatedAt": "2026-10-31T15:30:00Z",
     "title": "Quarterly Achievers",
     "category": "Celebration",
     "imageUrl": "https://example.com/cover1.jpg",
@@ -1369,7 +1347,6 @@ Success Response:
   {
     "id": 2,
     "createdAt": "2026-10-31T16:00:00Z",
-    "updatedAt": "2026-10-31T16:00:00Z",
     "title": "Thank You Wall",
     "category": "Thank you",
     "imageUrl": "https://example.com/cover2.jpg",
@@ -1407,7 +1384,8 @@ Success Response:
   "title": "Quarterly Achievers",
   "category": "Celebration",
   "imageUrl": "https://example.com/cover1.jpg",
-  "authorId": 1
+  "authorId": 1,
+  "cards" : []
 }
 
 Error Response:
@@ -1429,7 +1407,6 @@ Success Response:
 {
   "id": 1,
   "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z",
   "title": "Quarterly Achievers",
   "category": "Celebration",
   "imageUrl": "https://example.com/cover1.jpg",
@@ -1687,15 +1664,13 @@ Success Response:
     "authorId": 3,
     "cardId": 1,
     "createdAt": "2026-10-31T15:30:00Z",
-    "updatedAt": "2026-10-31T15:30:00Z"
   },
   {
     "id": 2,
     "message": "I agree.",
     "authorId": 2,
     "cardId": 1,
-    "createdAt": "2026-10-31T16:00:00Z",
-    "updatedAt": "2026-10-31T16:00:00Z"
+    "createdAt": "2026-10-31T16:00:00Z"
   }
 ]
 
@@ -1725,8 +1700,7 @@ Success Response:
   "message": "Great idea!",
   "cardId": 1,
   "authorId": 3,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z"
+  "createdAt": "2026-10-31T15:30:00Z"
 }
 
 Error Response:
@@ -1754,8 +1728,7 @@ Success Response:
   "message": "Great idea!",
   "cardId": 1,
   "authorId": 3,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-10-31T15:30:00Z"
+  "createdAt": "2026-10-31T15:30:00Z"
 }
 
 Error Response:
@@ -1782,8 +1755,7 @@ Success Response:
   "message": "Updated comment.",
   "cardId": 1,
   "authorId": 3,
-  "createdAt": "2026-10-31T15:30:00Z",
-  "updatedAt": "2026-11-01T10:00:00Z"
+  "createdAt": "2026-10-31T15:30:00Z"
 }
 
 Error Response:
