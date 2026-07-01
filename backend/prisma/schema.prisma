@@ -35,11 +35,12 @@ model Board {
 	createdAt      DateTime @default(now())
 	updatedAt      DateTime @updatedAt
 
-	author         User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 	title          String
 	category       String
 	imageUrl       String
 	cards          Card[]
+
+	author         User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
@@ -60,6 +61,7 @@ model Card {
 	title         String
 	description   String?
 	pinned        Boolean @default(false)
+	pinnedAt      DateTime?
 	gifUrl        String
 	upvotes       Int  @default(0)
 	authorId      Int
@@ -71,6 +73,4 @@ model Card {
 
 	author        User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 	board         Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
-
-  	pinnedAt      DateTime?
 }

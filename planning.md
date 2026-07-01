@@ -1195,16 +1195,616 @@ If the README's "Deployment" stretch goal is pursued and `/boards/:id` 404s on r
 
 ---
 
+
+
 # Section 2: API Contracts
 
-Define every endpoint the frontend will consume. For each route:
+## Users
+### GET /users/:id
+Get a users information by id.
 
-- Method and path (e.g., POST /boards)
-- Request body — field names, types, required vs. optional
-- Success response — shape and status code
-- Error responses — what cases trigger errors and what status codes they return
+- HTTP Method/Path: GET /users/:id
+- Request Body: N/A
+- Query Parameters: id
 
-You should have contracts for boards CRUD, cards CRUD, upvoting, filtering, and search before writing any Express code.
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "email": "random@gmail.com",
+  "username": "bomb.com",
+  "password": "iamtheone"
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "User not found." }
+
+### POST /users
+Add a new user when they register.
+
+- HTTP Method/Path: POST /users
+- Request Body:
+{
+  "email": "example@gmail.com",
+  "username": "exampleuser",
+  "password": "examplepassword"
+}
+- Query Parameters: N/A
+
+Success Response:
+- Status Code: 201
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "email": "example@gmail.com",
+  "username": "exampleuser",
+  "password": "examplepassword",
+  "boards": [],
+  "cards": [],
+  "comments": []
+}
+
+Error Response:
+- Status Code: 400
+{ "error": "Cannot create user. {fields} fields are missing." }
+
+### PUT /users/:id
+Update a user's profile. Only the provided fields are changed.
+
+- HTTP Method/Path: PUT /users/:id
+- Request Body (all fields optional):
+{
+  "email": "new_email@gmail.com",
+  "username": "exampleuser",
+  "password": "examplepassword"
+}
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example (returns the full updated user):
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-11-01T10:00:00Z",
+  "email": "new_email@gmail.com",
+  "username": "exampleuser",
+  "password": "iamtheone"
+}
+
+Error Response:
+- Status Code: 400
+{ "error": "Cannot update user" }
+
+---
+
+### DELETE /users/:id
+Delete one specific user from the database.
+
+- HTTP Method/Path: DELETE /users/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+```json
+{ "message": "User now deleted" }
+```
+
+Error Response:
+- Status Code: 404
+```json
+{ "error": "User not found." }
+```
+
+Note: deleting a user cascades (onDelete: Cascade) to their boards, cards, and comments. NEVER delete the Guest user (id 1).
+
+---
+
+### POST /login
+Authenticate a user and return their profile.
+
+- HTTP Method/Path: POST /login
+- Request Body:
+{
+  "email": "example@gmail.com",
+  "password": "examplepassword"
+}
+  - `email` (required), `password` (required).
+- Query Parameters: N/A
+
+Success Response:
+- Status Code: 200
+- Body Example (password omitted):
+```json
+{
+  "id": 1,
+  "email": "example@gmail.com",
+  "username": "exampleuser",
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z"
+}
+```
+
+Error Response:
+- Status Code: 401
+```json
+{ "error": "Invalid credentials." }
+```
+
+---
+
+## Boards
+
+### GET /boards
+Get the list of boards. Supports search, category filter, and the "Recent" view.
+
+- HTTP Method/Path: GET /boards
+- Request Body: N/A
+- Query Parameters (all optional):
+  - `category` — filter by `Board.category`; a value of `All` is ignored (returns everything).
+  - `title` — case-insensitive substring match on `Board.title`.
+  - `sort` — when set to `recent`, returns the 6 most recently created boards.
+  - `limit` — cap the number of boards returned.
+
+Success Response:
+- Status Code: 200
+- Body Example (array, ordered by `createdAt` desc):
+[
+  {
+    "id": 1,
+    "createdAt": "2026-10-31T15:30:00Z",
+    "updatedAt": "2026-10-31T15:30:00Z",
+    "title": "Quarterly Achievers",
+    "category": "Celebration",
+    "imageUrl": "https://example.com/cover1.jpg",
+    "authorId": 1
+  },
+  {
+    "id": 2,
+    "createdAt": "2026-10-31T16:00:00Z",
+    "updatedAt": "2026-10-31T16:00:00Z",
+    "title": "Thank You Wall",
+    "category": "Thank you",
+    "imageUrl": "https://example.com/cover2.jpg",
+    "authorId": 3
+  }
+]
+
+Error Response:
+- Status Code: 500
+{ "error": "Cannot retrieve boards." }
+
+---
+
+### POST /boards
+Add a board to the list of boards.
+
+- HTTP Method/Path: POST /boards
+- Request Body:
+{
+  "title": "Quarterly Achievers",
+  "category": "Celebration",
+  "imageUrl": "https://example.com/cover1.jpg",
+  "authorid": 1
+}
+  - `title` (required), `category` (required), `imageUrl` (optional), `authorName` (optional — blank resolves to the Guest user, id 1).
+- Query Parameters: N/A
+
+Success Response:
+- Status Code: 201
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "title": "Quarterly Achievers",
+  "category": "Celebration",
+  "imageUrl": "https://example.com/cover1.jpg",
+  "authorId": 1
+}
+
+Error Response:
+- Status Code: 400
+{ "error": "Cannot create board" }
+
+---
+
+### GET /boards/:id
+Get one specific board, including its author and nested cards (each card with its author and comments).
+
+- HTTP Method/Path: GET /boards/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "title": "Quarterly Achievers",
+  "category": "Celebration",
+  "imageUrl": "https://example.com/cover1.jpg",
+  "authorId": 1,
+  "author": { "id": 1, "username": "Guest", "email": "guest@kudos.local" },
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "Board not found." }
+
+---
+
+### PUT /boards/:id
+Update one specific board. Only the provided fields are changed.
+
+- HTTP Method/Path: PUT /boards/:id
+- Request Body (all fields optional):
+{
+  "title": "Updated Title",
+  "category": "Inspiration",
+  "imageUrl": "https://example.com/newcover.jpg"
+}
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-11-01T10:00:00Z",
+  "title": "Updated Title",
+  "category": "Inspiration",
+  "imageUrl": "https://example.com/newcover.jpg",
+  "authorId": 1
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "Board not found" }
+
+---
+
+### DELETE /boards/:id
+Delete one specific board.
+
+- HTTP Method/Path: DELETE /boards/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+{ "message": "Board deleted successfully." }
+
+
+Error Response:
+- Status Code: 404
+{ "error": "Board not found" }
+
+Note: deleting a board cascades (onDelete: Cascade) to its cards and their comments.
+
+---
+
+### GET /boards/:id/cards
+Get all cards belonging to a board, ordered pinned-first (most recently pinned first), then unpinned by `createdAt` desc.
+
+- HTTP Method/Path: GET /boards/:id/cards
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example (array):
+[
+  {
+    "id": 2,
+    "createdAt": "2026-10-31T16:00:00Z",
+    "updatedAt": "2026-10-31T16:00:00Z",
+    "title": "Finish Project",
+    "description": "Complete backend API",
+    "pinned": true,
+    "pinnedAt": "2026-10-31T16:15:00Z",
+    "gifUrl": "https://example.com/gif2.gif",
+    "upvotes": 15,
+    "authorId": 2,
+    "boardId": 2
+  },
+  {
+    "id": 1,
+    "createdAt": "2026-10-31T15:30:00Z",
+    "updatedAt": "2026-10-31T15:30:00Z",
+    "title": "Study for Exam",
+    "description": "Review chapters 1-5",
+    "pinned": false,
+    "pinnedAt": null,
+    "gifUrl": "https://example.com/gif1.gif",
+    "upvotes": 7,
+    "authorId": 1,
+    "boardId": 2
+  }
+]
+
+Error Response:
+- Status Code: 404
+{ "error": "Cannot retrieve cards." }
+
+---
+
+## Cards
+
+### GET /cards/:id
+Get one specific card, including its author and comments.
+
+- HTTP Method/Path: GET /cards/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "title": "Study for Exam",
+  "description": "Review chapters 1-5",
+  "pinned": false,
+  "pinnedAt": null,
+  "gifUrl": "https://example.com/gif.gif",
+  "upvotes": 7,
+  "authorId": 1,
+  "boardId": 2,
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "Cannot retrieve card." }
+
+---
+
+### POST /cards
+Create a card. Author is optional (blank resolves to the Guest user, id 1). Pinned should be the default value (false) and pinned at should be null.
+
+- HTTP Method/Path: POST /cards
+- Request Body:
+{
+  "title": "Study for Exam",
+  "description": "Review chapters 1-5",
+  "gifUrl": "https://example.com/gif.gif",
+  "boardId": 2,
+  "authorName": "exampleuser"
+}
+  - `title` (required), `gifUrl` (required), `boardId` (required), `description` (optional), `authorName` (optional).
+- Path Parameters: N/A
+- Query Parameters: N/A
+
+Success Response:
+- Status Code: 201
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z",
+  "title": "Study for Exam",
+  "description": "Review chapters 1-5",
+  "pinned": false,
+  "pinnedAt": null,
+  "gifUrl": "https://example.com/gif.gif",
+  "upvotes": 0,
+  "authorId": 1,
+  "boardId": 2,
+  "comments": []
+}
+
+
+Error Response:
+- Status Code: 400
+{ "error": "Cannot create card." }
+
+---
+
+### PUT /cards/:id
+Update a specific card. Only the provided fields are changed. Also handles upvoting (`upvotes`) and pin/unpin (`pinned` — setting it updates `pinnedAt` automatically).
+
+- HTTP Method/Path: PUT /cards/:id
+- Request Body (all fields optional):
+
+{
+  "title": "Updated Title",
+  "description": "Updated description",
+  "gifUrl": "https://example.com/newgif.gif",
+  "pinned": true,
+  "upvotes": 8
+}
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-11-01T10:00:00Z",
+  "title": "Updated Title",
+  "description": "Updated description",
+  "pinned": true,
+  "pinnedAt": "2026-11-01T10:00:00Z",
+  "gifUrl": "https://example.com/newgif.gif",
+  "upvotes": 8,
+  "authorId": 1,
+  "boardId": 2,
+  "comments": []
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "Card not found" }
+
+---
+
+### DELETE /cards/:id
+Delete a specific card.
+
+- HTTP Method/Path: DELETE /cards/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+{ "message": "Card deleted successfully." }
+
+Error Response:
+- Status Code: 404
+{ "error": "Card not found" }
+
+Note: deleting a card cascades (onDelete: Cascade) to its comments.
+
+---
+
+### GET /cards/:id/comments
+Get a list of all of a card's comments, oldest first, each with its author.
+
+- HTTP Method/Path: GET /cards/:id/comments
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example (array):
+[
+  {
+    "id": 1,
+    "message": "Great idea!",
+    "authorId": 3,
+    "cardId": 1,
+    "createdAt": "2026-10-31T15:30:00Z",
+    "updatedAt": "2026-10-31T15:30:00Z"
+  },
+  {
+    "id": 2,
+    "message": "I agree.",
+    "authorId": 2,
+    "cardId": 1,
+    "createdAt": "2026-10-31T16:00:00Z",
+    "updatedAt": "2026-10-31T16:00:00Z"
+  }
+]
+
+Error Response:
+- Status Code: 404
+{ "error": "Card not found" }
+
+---
+
+### POST /cards/:id/comments
+Create a comment on a card. Author is optional (blank resolves to the Guest user, id 1).
+
+- HTTP Method/Path: POST /cards/:id/comments
+- Request Body:
+{
+  "message": "Great idea!",
+  "authorId": 3
+}
+
+- Query Parameters: id
+
+Success Response:
+- Status Code: 201
+- Body Example:
+{
+  "id": 1,
+  "message": "Great idea!",
+  "cardId": 1,
+  "authorId": 3,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z"
+}
+
+Error Response:
+- Status Code: 400
+```json
+{ "error": "Cannot create a comment." }
+```
+
+---
+
+## Comments
+
+### GET /comments/:id
+Get a specific comment.
+
+- HTTP Method/Path: GET /comments/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "message": "Great idea!",
+  "cardId": 1,
+  "authorId": 3,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-10-31T15:30:00Z"
+}
+
+Error Response:
+- Status Code: 404
+
+{ "error": "Comment not found." }
+
+---
+
+### PUT /comments/:id
+Update a specific comment's message.
+
+- HTTP Method/Path: PUT /comments/:id
+- Request Body:
+{ "message": "Updated comment." }
+
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+- Body Example:
+{
+  "id": 1,
+  "message": "Updated comment.",
+  "cardId": 1,
+  "authorId": 3,
+  "createdAt": "2026-10-31T15:30:00Z",
+  "updatedAt": "2026-11-01T10:00:00Z"
+}
+
+Error Response:
+- Status Code: 404
+{ "error": "Comment not found" }
+---
+
+### DELETE /comments/:id
+Delete a specific comment.
+
+- HTTP Method/Path: DELETE /comments/:id
+- Request Body: N/A
+- Query Parameters: id
+
+Success Response:
+- Status Code: 200
+{ "message": "Comment deleted successfully." }
+
+Error Response:
+- Status Code: 404
+{ "error": "Comment not found" }
 
 # Section 3: Database Schema Spec
 
