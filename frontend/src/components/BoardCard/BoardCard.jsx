@@ -12,7 +12,7 @@ function BoardCard({ board, onDelete }) {
         aria-label={`Open board ${board.title}`}
       >
         <div className="board-card__image-wrap">
-          <img src={board.imageURL} alt="" className="board-card__image" />
+          <img src={board.imageUrl} alt="" className="board-card__image" />
         </div>
         <div className="board-card__body">
           <div className="board-card__text">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Header from '../../components/Header/Header';
 import Banner from '../../components/Banner/Banner';
 import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
@@ -6,10 +6,11 @@ import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import Footer from '../../components/Footer/Footer';
 import { MOCK_BOARDS, CATEGORIES } from '../../data/mockBoards';
+import axios from "axios";
 import './HomePage.css';
 
 function HomePage() {
-  const [boards, setBoards] = useState(MOCK_BOARDS);
+  const [boards, setBoards] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -36,6 +37,20 @@ function HomePage() {
     return list;
   }, [boards, selectedCategory, searchQuery]);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchBoards = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/boards`);
+        setBoards(response.data)
+      } catch(err) {
+        console.error("Failed to load boards:", err);
+      }
+    };
+    fetchBoards();
+  }, []);
+
   const handleSearchSubmit = () => setSearchQuery(searchInput);
 
   const handleSearchClear = () => {
@@ -48,7 +63,7 @@ function HomePage() {
       id: Math.max(0, ...boards.map((b) => b.id)) + 1,
       title,
       category,
-      imageURL: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600',
+      imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600',
       createdAt: new Date(2026, 5, 30).toISOString(),
       authorName,
     };
