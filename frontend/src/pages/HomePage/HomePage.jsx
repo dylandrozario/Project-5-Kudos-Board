@@ -5,7 +5,6 @@ import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
 import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import Footer from '../../components/Footer/Footer';
-import { MOCK_BOARDS, CATEGORIES } from '../../data/mockBoards';
 import axios from "axios";
 import './HomePage.css';
 
@@ -15,6 +14,7 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
 
   const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
 

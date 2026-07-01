@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import BoardBanner from '../../components/BoardBanner/BoardBanner';
@@ -6,9 +6,8 @@ import CardGrid from '../../components/CardGrid/CardGrid';
 import AddCardModal from '../../components/AddCardModal/AddCardModal';
 import CommentModal from '../../components/CommentModal/CommentModal';
 import Footer from '../../components/Footer/Footer';
-import { MOCK_BOARDS } from '../../data/mockBoards';
-import { MOCK_CARDS_BY_BOARD } from '../../data/mockCards';
 import './BoardPage.css';
+import axios from "axios";
 
 function sortCards(cards) {
   return [...cards].sort((a, b) => {
@@ -28,19 +27,23 @@ function BoardPage() {
   const boardId = Number(params.boardId);
   const goHome = () => navigate('/');
 
-  const initialBoard = useMemo(() => {
-    const meta = MOCK_BOARDS.find((b) => b.id === boardId);
-    if (!meta) return null;
-    return {
-      ...meta,
-      author: { id: 1, username: 'Guest' },
-      cards: MOCK_CARDS_BY_BOARD[boardId] ?? [],
-    };
-  }, [boardId]);
-
-  const [board, setBoard] = useState(initialBoard);
+  const [board, setBoard] = useState(null);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [commentsModalCardId, setCommentsModalCardId] = useState(null);
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchBoard = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/boards/${boardId}`);
+        setBoard(response.data)
+      } catch(err) {
+        console.error("Failed to load board:", err);
+      }
+    };
+    fetchBoard();
+  }, [boardId]);
 
   const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
 

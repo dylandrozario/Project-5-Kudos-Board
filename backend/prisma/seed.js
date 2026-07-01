@@ -12,6 +12,76 @@ const MOCK_BOARDS = [
   { title: "Monthly Achievers", category: "Celebration", imageUrl: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600", createdAt: "2026-06-21T12:00:00Z" },
 ];
 
+// Cards for the first seeded board. Mirrors frontend/src/data/mockCards.js, minus
+// the hardcoded ids/boardId (Postgres autoincrements) and the author objects —
+// every card/comment is attributed to the guest user via authorId (a required FK).
+const MOCK_CARDS = [
+  {
+    title: "Quarter MVP",
+    description: "Absolutely crushed it this quarter — your dedication to the team is unmatched. So proud of everything you achieved!",
+    gifUrl: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600",
+    upvotes: 14,
+    pinned: true,
+    pinnedAt: "2026-06-28T08:00:00Z",
+    createdAt: "2026-06-20T10:00:00Z",
+    comments: [
+      { message: "Couldn’t agree more!", createdAt: "2026-06-21T10:00:00Z" },
+    ],
+  },
+  {
+    title: "Launch Leadership",
+    description: "Your leadership during the product launch kept everyone calm and focused. You are a true rockstar.",
+    gifUrl: "",
+    upvotes: 9,
+    pinned: false,
+    pinnedAt: null,
+    createdAt: "2026-06-22T10:00:00Z",
+    comments: [],
+  },
+  {
+    title: "Bug Hero",
+    description: "The way you tackled that critical bug at 11 PM saved the whole release. Hero stuff.",
+    gifUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600",
+    upvotes: 20,
+    pinned: false,
+    pinnedAt: null,
+    createdAt: "2026-06-23T10:00:00Z",
+    comments: [
+      { message: "Legend.", createdAt: "2026-06-24T09:00:00Z" },
+    ],
+  },
+  {
+    title: "Stand-up Spark",
+    description: "Thank you for always going the extra mile and bringing such positive energy to every stand-up. You lift everyone up.",
+    gifUrl: "",
+    upvotes: 6,
+    pinned: false,
+    pinnedAt: null,
+    createdAt: "2026-06-24T10:00:00Z",
+    comments: [],
+  },
+  {
+    title: "Cross-team Champion",
+    description: "Your cross-team collaboration this quarter set a new standard for the whole org. Genuinely impressive.",
+    gifUrl: "",
+    upvotes: 11,
+    pinned: false,
+    pinnedAt: null,
+    createdAt: "2026-06-25T10:00:00Z",
+    comments: [],
+  },
+  {
+    title: "Workshop Warmth",
+    description: "Loved your contribution to the team workshop — you made everyone feel heard.",
+    gifUrl: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600",
+    upvotes: 4,
+    pinned: false,
+    pinnedAt: null,
+    createdAt: "2026-06-26T10:00:00Z",
+    comments: [],
+  },
+];
+
 async function main() {
   // Boards require an author (User), so create/find one first.
   const user = await prisma.user.upsert({
@@ -24,13 +94,33 @@ async function main() {
     },
   });
 
+  let firstBoardId = null;
   for (const board of MOCK_BOARDS) {
-    await prisma.board.create({
+    const created = await prisma.board.create({
       data: { ...board, authorId: user.id },
     });
+    if (firstBoardId === null) firstBoardId = created.id;
   }
 
-  console.log(`Seeded ${MOCK_BOARDS.length} boards for user ${user.email} ✅`);
+  // The mock cards all belong to the first board (matches the frontend mock).
+  let commentCount = 0;
+  for (const { comments, ...card } of MOCK_CARDS) {
+    await prisma.card.create({
+      data: {
+        ...card,
+        boardId: firstBoardId,
+        authorId: user.id,
+        comments: {
+          create: comments.map((comment) => ({ ...comment, authorId: user.id })),
+        },
+      },
+    });
+    commentCount += comments.length;
+  }
+
+  console.log(
+    `Seeded ${MOCK_BOARDS.length} boards, ${MOCK_CARDS.length} cards, ${commentCount} comments for user ${user.email} ✅`,
+  );
 }
 
 main()
