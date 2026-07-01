@@ -6,8 +6,8 @@ function BoardBanner({ board, cardCount, onAddCard }) {
 
   return (
     <header className="board-banner">
-      {board.imageURL && (
-        <img src={board.imageURL} alt="" className="board-banner__image" />
+      {board.imageUrl && (
+        <img src={board.imageUrl} alt="" className="board-banner__image" />
       )}
       <div className="board-banner__scrim" />
       <div className="board-banner__content">

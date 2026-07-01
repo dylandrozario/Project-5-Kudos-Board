@@ -5,7 +5,6 @@ import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
 import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import Footer from '../../components/Footer/Footer';
-import { MOCK_BOARDS, CATEGORIES } from '../../data/mockBoards';
 import axios from "axios";
 import './HomePage.css';
 
@@ -15,7 +14,8 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-
+  const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
+  
   const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
 
   const filteredBoards = useMemo(() => {
@@ -59,12 +59,17 @@ function HomePage() {
   };
 
   const handleCreateBoard = async ({ title, category, imageUrl }) => {
-    const response = await axios.post(`${API_BASE_URL}/boards`, {
-      title,
-      category,
-      imageUrl,
-    });
-    setBoards((prev) => [response.data, ...prev]);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/boards`, {
+        title,
+        category,
+        imageUrl,
+        authorId: currentUser.id,
+      });
+      setBoards((prev) => [response.data, ...prev]);
+    } catch (err) {
+      console.error("Failed to create board:", err);
+    }
   };
 
   const handleDeleteBoard = async (id) => {
@@ -72,7 +77,7 @@ function HomePage() {
       await axios.delete(`${API_BASE_URL}/boards/${id}`);
       setBoards((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
-      console.error('Failed to delete board:', err);
+      console.error("Failed to delete board:", err);
     }
   };
 

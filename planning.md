@@ -5,7 +5,7 @@
 The component spec below assumes the Prisma models exactly as defined:
 
 - `User { id, email, username?, password, boards[], cards[], comments[], createdAt, updatedAt}`  (`username` is optional/nullable in the schema)
-- `Board { id, imageURL, authorId, title, category, cards[], createdAt, updatedAt}`
+- `Board { id, imageUrl, authorId, title, category, cards[], createdAt, updatedAt}`
 - `Card { id, title, description?, pinned, pinnedAt, gifUrl, upvotes, authorId, boardId, comments[], createdAt, updatedAt}`
 - `Comment { id, message, cardId, authorId, createdAt, updatedAt}`
 
@@ -21,7 +21,7 @@ The component spec below assumes the Prisma models exactly as defined:
 - `Card.pinned: boolean` is supported by a `PinButton`; the grid sorts pinned cards first and persists across refresh.
 - **Dark Mode** (stretch): `ThemeToggle` reads/writes `ThemeContext`, persisted to `localStorage` so the choice survives navigation and refresh; default is light.
 - **User Accounts** (stretch): adds `LoginPage`, `SignupPage`, and an `AuthContext` so the Header can show the current user and "My boards" can filter on `authorId`.
-- `Board.imageURL` is the cover image source for both `BoardCard` (Homepage grid) and `BoardBanner` (Board page hero).
+- `Board.imageUrl` is the cover image source for both `BoardCard` (Homepage grid) and `BoardBanner` (Board page hero).
 - `User.username` is the display label for `UserAvatar` and per-card/per-comment author labels. It's optional in the schema, but the **Guest user** seeded at id `1` always has `username: "Guest"`, so anonymous content still displays a real label. No `imageUrl` field exists on `User` — the `Avatar` component derives an initial from `username` (falling back to `?` if somehow null).
 
 ---
@@ -418,7 +418,8 @@ The Homepage shows a searchable, category-filterable grid of kudos boards, plus 
 
 | Prop | Type | Source | Description |
 |---|---|---|---|
-| `board` | `Board` (`{ id: number; title: string; category: string; imageURL: string; authorId: number; createdAt; updatedAt }`) | BoardGrid | The board to display. `imageURL` is rendered as the cover photo. |
+| `board` | `Board` (`{ id: number; title: string; category: string; imageUrl: string; authorId: number; createdAt; updatedAt }`) | BoardGrid | The board to display. `imageUrl
+` is rendered as the cover photo. |
 | `onClick` | `(id: number) => void` | BoardGrid | Navigation handler; defaults to `Link` to `/boards/:id`. |
 | `onDelete` | `(id: number) => void` | BoardGrid | Delete handler. |
 
@@ -528,7 +529,8 @@ Derived (recomputed each render, not stored):
 
 | Prop | Type | Source | Description |
 |---|---|---|---|
-| `board` | `Board` | BoardPage | Board metadata from Prisma. `board.imageURL` is rendered as the hero background. |
+| `board` | `Board` | BoardPage | Board metadata from Prisma. `board.imageUrl
+` is rendered as the hero background. |
 | `cardCount` | `number` | BoardPage | Length of `cards`. |
 | `onAddCard` | `() => void` | BoardPage | Opens the Add Card modal. |
 
@@ -946,7 +948,8 @@ App
     ├── BoardGrid
     │   └── BoardCard (×N)
     │       ├── Link → /boards/:id
-    │       │   ├── img            (board.imageURL)
+    │       │   ├── img            (board.imageUrl
+)
     │       │   ├── h3             (board.title)
     │       │   └── CategoryBadge  (board.category)
     │       └── DeleteButton       (overlay; sibling of Link, not nested)
