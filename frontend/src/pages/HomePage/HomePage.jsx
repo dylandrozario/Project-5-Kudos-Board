@@ -58,20 +58,22 @@ function HomePage() {
     setSearchQuery('');
   };
 
-  const handleCreateBoard = async ({ title, category, authorName }) => {
-    const newBoard = {
-      id: Math.max(0, ...boards.map((b) => b.id)) + 1,
+  const handleCreateBoard = async ({ title, category, imageUrl }) => {
+    const response = await axios.post(`${API_BASE_URL}/boards`, {
       title,
       category,
-      imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600',
-      createdAt: new Date(2026, 5, 30).toISOString(),
-      authorName,
-    };
-    setBoards([newBoard, ...boards]);
+      imageUrl,
+    });
+    setBoards((prev) => [response.data, ...prev]);
   };
 
-  const handleDeleteBoard = (id) => {
-    setBoards(boards.filter((b) => b.id !== id));
+  const handleDeleteBoard = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/boards/${id}`);
+      setBoards((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error('Failed to delete board:', err);
+    }
   };
 
   return (

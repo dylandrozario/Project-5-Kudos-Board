@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import BoardBanner from '../../components/BoardBanner/BoardBanner';
@@ -6,9 +7,9 @@ import CardGrid from '../../components/CardGrid/CardGrid';
 import AddCardModal from '../../components/AddCardModal/AddCardModal';
 import CommentModal from '../../components/CommentModal/CommentModal';
 import Footer from '../../components/Footer/Footer';
-import { MOCK_BOARDS } from '../../data/mockBoards';
-import { MOCK_CARDS_BY_BOARD } from '../../data/mockCards';
 import './BoardPage.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function sortCards(cards) {
   return [...cards].sort((a, b) => {
@@ -28,26 +29,166 @@ function BoardPage() {
   const boardId = Number(params.boardId);
   const goHome = () => navigate('/');
 
-  const initialBoard = useMemo(() => {
-    const meta = MOCK_BOARDS.find((b) => b.id === boardId);
-    if (!meta) return null;
-    return {
-      ...meta,
-      author: { id: 1, username: 'Guest' },
-      cards: MOCK_CARDS_BY_BOARD[boardId] ?? [],
-    };
-  }, [boardId]);
-
-  const [board, setBoard] = useState(initialBoard);
+  const [board, setBoard] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [commentsModalCardId, setCommentsModalCardId] = useState(null);
 
   const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
 
+  useEffect(() => {
+    const fetchBoard = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // GET /boards/:id — expected to include nested cards (each with author + comments).
+        // If the backend doesn't include them yet, GET /boards/:id/cards is fetched as fallback.
+        const boardRes = await axios.get(`${API_BASE_URL}/boards/${boardId}`);
+        let payload = boardRes.data;
+
+        if (!Array.isArray(payload.cards)) {
+          const cardsRes = await axios.get(`${API_BASE_URL}/boards/${boardId}/cards`);
+          payload = { ...payload, cards: cardsRes.data };
+        }
+
+        // Ensure every card has a comments array so the UI never crashes on `.comments.length`.
+        payload.cards = payload.cards.map((c) => ({
+          ...c,
+          comments: c.comments ?? [],
+        }));
+
+        setBoard(payload);
+      } catch (err) {
+        console.error('Failed to load board:', err);
+        setError('Could not load this board.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBoard();
+  }, [boardId]);
+
   const sortedCards = useMemo(() => sortCards(board?.cards ?? []), [board]);
   const commentsCard = sortedCards.find((c) => c.id === commentsModalCardId) ?? null;
 
-  if (!board) {
+  const updateCards = (mutator) => {
+    setBoard((prev) => (prev ? { ...prev, cards: mutator(prev.cards) } : prev));
+  };
+
+  const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
+    const response = await axios.post(`${API_BASE_URL}/cards`, {
+      title,
+      description,
+      gifUrl,
+      boardId,
+      authorName,
+    });
+    const created = { ...response.data, comments: response.data.comments ?? [] };
+    updateCards((cards) => [created, ...cards]);
+  };
+
+  const handleUpvote = async (cardId) => {
+    const target = board.cards.find((c) => c.id === cardId);
+    if (!target) return;
+    const nextUpvotes = target.upvotes + 1;
+
+    updateCards((cards) =>
+      cards.map((c) => (c.id === cardId ? { ...c, upvotes: nextUpvotes } : c)),
+    );
+
+    try {
+      await axios.put(`${API_BASE_URL}/cards/${cardId}`, { upvotes: nextUpvotes });
+    } catch (err) {
+      console.error('Failed to upvote:', err);
+      updateCards((cards) =>
+        cards.map((c) => (c.id === cardId ? { ...c, upvotes: target.upvotes } : c)),
+      );
+    }
+  };
+
+  const handlePin = async (cardId, pinned) => {
+    const target = board.cards.find((c) => c.id === cardId);
+    if (!target) return;
+
+    updateCards((cards) =>
+      cards.map((c) =>
+        c.id === cardId
+          ? { ...c, pinned, pinnedAt: pinned ? new Date().toISOString() : null }
+          : c,
+      ),
+    );
+
+    try {
+      await axios.put(`${API_BASE_URL}/cards/${cardId}`, { pinned });
+    } catch (err) {
+      console.error('Failed to pin/unpin:', err);
+      updateCards((cards) =>
+        cards.map((c) =>
+          c.id === cardId
+            ? { ...c, pinned: target.pinned, pinnedAt: target.pinnedAt }
+            : c,
+        ),
+      );
+    }
+  };
+
+  const handleDelete = async (cardId) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/cards/${cardId}`);
+      updateCards((cards) => cards.filter((c) => c.id !== cardId));
+      if (commentsModalCardId === cardId) setCommentsModalCardId(null);
+    } catch (err) {
+      console.error('Failed to delete card:', err);
+    }
+  };
+
+  const handleAddComment = async (cardId, message, authorName) => {
+    const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, {
+      message,
+      authorName,
+    });
+    updateCards((cards) =>
+      cards.map((c) =>
+        c.id === cardId ? { ...c, comments: [...c.comments, response.data] } : c,
+      ),
+    );
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/comments/${commentId}`);
+      updateCards((cards) =>
+        cards.map((c) => ({
+          ...c,
+          comments: c.comments.filter((cm) => cm.id !== commentId),
+        })),
+      );
+    } catch (err) {
+      console.error('Failed to delete comment:', err);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="board-page">
+        <Header
+          showBackButton
+          onBack={goHome}
+          searchInput=""
+          onSearchInputChange={() => {}}
+          onSearchSubmit={() => {}}
+          onSearchClear={() => {}}
+          onCreateBoard={() => {}}
+          user={currentUser}
+        />
+        <main className="board-page__loading">Loading board…</main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !board) {
     return (
       <div className="board-page board-page--missing">
         <Header
@@ -61,85 +202,13 @@ function BoardPage() {
           user={currentUser}
         />
         <main className="board-page__missing">
-          <h2>Board not found</h2>
+          <h2>{error ?? 'Board not found'}</h2>
           <button type="button" onClick={goHome}>← Back to all boards</button>
         </main>
         <Footer />
       </div>
     );
   }
-
-  const updateCards = (mutator) => {
-    setBoard((prev) => (prev ? { ...prev, cards: mutator(prev.cards) } : prev));
-  };
-
-  const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
-    const newCard = {
-      id: Date.now(),
-      title,
-      description,
-      gifUrl,
-      upvotes: 0,
-      pinned: false,
-      pinnedAt: null,
-      boardId: board.id,
-      createdAt: new Date(2026, 5, 30).toISOString(),
-      author: { id: 1, username: authorName || 'Guest' },
-      comments: [],
-    };
-    updateCards((cards) => [newCard, ...cards]);
-  };
-
-  const handleUpvote = (cardId) => {
-    updateCards((cards) =>
-      cards.map((c) => (c.id === cardId ? { ...c, upvotes: c.upvotes + 1 } : c)),
-    );
-  };
-
-  const handlePin = (cardId, pinned) => {
-    updateCards((cards) =>
-      cards.map((c) =>
-        c.id === cardId
-          ? { ...c, pinned, pinnedAt: pinned ? new Date(2026, 5, 30).toISOString() : null }
-          : c,
-      ),
-    );
-  };
-
-  const handleDelete = (cardId) => {
-    updateCards((cards) => cards.filter((c) => c.id !== cardId));
-  };
-
-  const handleAddComment = (cardId, message, authorName) => {
-    updateCards((cards) =>
-      cards.map((c) =>
-        c.id === cardId
-          ? {
-              ...c,
-              comments: [
-                ...c.comments,
-                {
-                  id: Date.now(),
-                  message,
-                  cardId,
-                  author: { id: 1, username: authorName || 'Guest' },
-                  createdAt: new Date(2026, 5, 30).toISOString(),
-                },
-              ],
-            }
-          : c,
-      ),
-    );
-  };
-
-  const handleDeleteComment = (commentId) => {
-    updateCards((cards) =>
-      cards.map((c) => ({
-        ...c,
-        comments: c.comments.filter((cm) => cm.id !== commentId),
-      })),
-    );
-  };
 
   return (
     <div className="board-page">
