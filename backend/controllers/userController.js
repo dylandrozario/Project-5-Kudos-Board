@@ -1,8 +1,10 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
+const SALT_ROUNDS = 10;
 
-// Skeleton for user + authentication; fix when doing authentication
 // Strip the password before sending a user back to the client.
 function safeUser(user) {
   if (!user) return user;
@@ -40,8 +42,26 @@ async function createUser(req, res) {
       });
     }
 
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 8 characters." });
+    }
+
+    // Reject duplicates before creating so we can name the offending field.
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ email }, { username: username || null }] },
+    });
+    if (existing) {
+      const field = existing.email === email ? "email" : "username";
+      return res.status(409).json({ error: `That ${field} already exists.` });
+    }
+
+    // Store a hash, never the plain-text password.
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
     const user = await prisma.user.create({
-      data: { email, username: username || null, password },
+      data: { email, username: username || null, password: hashedPassword },
       include: { boards: true, cards: true, comments: true },
     });
 
@@ -60,7 +80,7 @@ async function updateUser(req, res) {
     const data = {};
     if (email !== undefined) data.email = email;
     if (username !== undefined) data.username = username;
-    if (password !== undefined) data.password = password;
+    if (password !== undefined) data.password = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await prisma.user.update({ where: { id }, data });
     res.status(200).json(safeUser(user));
@@ -86,13 +106,19 @@ async function login(req, res) {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || user.password !== password) {
+    // Compare the attempt against the stored hash. Same 401 whether the email
+    // is unknown or the password is wrong, so we don't leak which one exists.
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials." });
     }
 
-    res.status(200).json({
-      message: `${user.username || user.email} logged in successfully!`,
-    });
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN },
+    );
+
+    res.status(200).json({ token, user: safeUser(user) });
   } catch (err) {
     res.status(401).json({ error: "Invalid credentials." });
   }

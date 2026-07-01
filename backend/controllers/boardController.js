@@ -1,5 +1,4 @@
 const { PrismaClient } = require("@prisma/client");
-const { resolveAuthorId } = require("../utils/resolveAuthor");
 
 const prisma = new PrismaClient();
 
@@ -35,15 +34,12 @@ async function getBoards(req, res) {
 // POST /boards: creates a board and adds to the list of boards displayed
 async function createBoard(req, res) {
   try {
-    const { title, category, imageUrl, authorName } = req.body;
+    const { title, category, imageUrl, authorId } = req.body;
 
     // title + category are required fields
     if (!title || !category) {
       return res.status(400).json({ error: "Cannot create board" });
     }
-
-    // placeholder for login (save for later)
-    const authorId = await resolveAuthorId(authorName);
 
     // Create board using given parameters and return success/error response accordingly
     const board = await prisma.board.create({
@@ -148,14 +144,11 @@ async function getBoardCards(req, res) {
 async function createBoardCard(req, res) {
   try {
     const boardId = Number(req.params.id);
-    const { title, description, gifUrl, authorName } = req.body;
+    const { title, description, gifUrl, authorId } = req.body;
 
     if (!title || !gifUrl) {
       return res.status(400).json({ error: "Cannot create card." });
     }
-
-    // Placeholder for authentication; resolve later
-    const authorId = await resolveAuthorId(authorName);
 
     const card = await prisma.card.create({
       data: { title, description: description || "", gifUrl, boardId, authorId },
