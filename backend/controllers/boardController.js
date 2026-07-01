@@ -1,8 +1,9 @@
-const prisma = require("../prisma/client");
+const { PrismaClient } = require("@prisma/client");
 const { resolveAuthorId } = require("../utils/resolveAuthor");
 
-// GET /boards
-// Supports ?category, ?title (case-insensitive substring), and ?sort=recent.
+const prisma = new PrismaClient();
+
+// GET /boards: gets the list of boards to be displayed on the website.
 async function getBoards(req, res) {
   try {
     const { category, title, sort } = req.query;
@@ -11,17 +12,18 @@ async function getBoards(req, res) {
     if (category && category !== "All") {
       where.category = category;
     }
+
     if (title) {
       where.title = { contains: title, mode: "insensitive" };
     }
 
-    // "Recent" view: the 6 most recently created boards.
-    const take = sort === "recent" ? 6 : undefined;
+    // "Recent" view: shows only the 6 most recently created board if sorting by recent; otherwise show all boards
+    const totalShown = sort === "recent" ? 6 : undefined;
 
     const boards = await prisma.board.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take,
+      take: totalShown
     });
 
     res.status(200).json(boards);
@@ -30,17 +32,20 @@ async function getBoards(req, res) {
   }
 }
 
-// POST /boards
+// POST /boards: creates a board and adds to the list of boards displayed
 async function createBoard(req, res) {
   try {
     const { title, category, imageUrl, authorName } = req.body;
 
+    // title + category are required fields
     if (!title || !category) {
       return res.status(400).json({ error: "Cannot create board" });
     }
 
+    // placeholder for login (save for later)
     const authorId = await resolveAuthorId(authorName);
 
+    // Create board using given parameters and return success/error response accordingly
     const board = await prisma.board.create({
       data: { title, category, imageUrl: imageUrl || "", authorId },
       include: { cards: true },
@@ -52,11 +57,12 @@ async function createBoard(req, res) {
   }
 }
 
-// GET /boards/:id
+// GET /boards/:id: Returns one board based on id
 async function getBoardById(req, res) {
   try {
     const id = Number(req.params.id);
 
+    // Finds board by id and returns it as a success response if found; else returns error
     const board = await prisma.board.findUnique({
       where: { id },
       include: {
@@ -82,13 +88,14 @@ async function getBoardById(req, res) {
   }
 }
 
-// PUT /boards/:id — only provided fields are changed.
+// PUT /boards/:id: updates each board based on their id field
 async function updateBoard(req, res) {
   try {
     const id = Number(req.params.id);
     const { title, category, imageUrl } = req.body;
 
     const data = {};
+    // Only updates requested fields present
     if (title !== undefined) data.title = title;
     if (category !== undefined) data.category = category;
     if (imageUrl !== undefined) data.imageUrl = imageUrl;
@@ -100,7 +107,7 @@ async function updateBoard(req, res) {
   }
 }
 
-// DELETE /boards/:id — cascades to cards and their comments.
+// DELETE /boards/:id — cascades to cards and their comments; done based on id
 async function deleteBoard(req, res) {
   try {
     const id = Number(req.params.id);
@@ -121,6 +128,7 @@ async function getBoardCards(req, res) {
       return res.status(404).json({ error: "Cannot retrieve cards." });
     }
 
+    // finds the board's associated cards and orders them if pinned
     const cards = await prisma.card.findMany({
       where: { boardId },
       orderBy: [
@@ -146,10 +154,11 @@ async function createBoardCard(req, res) {
       return res.status(400).json({ error: "Cannot create card." });
     }
 
+    // Placeholder for authentication; resolve later
     const authorId = await resolveAuthorId(authorName);
 
     const card = await prisma.card.create({
-      data: { title, description: description || null, gifUrl, boardId, authorId },
+      data: { title, description: description || "", gifUrl, boardId, authorId },
       include: { comments: true },
     });
 

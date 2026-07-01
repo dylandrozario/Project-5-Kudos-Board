@@ -1,11 +1,14 @@
-const prisma = require("../prisma/client");
+const { PrismaClient } = require("@prisma/client");
 const { resolveAuthorId } = require("../utils/resolveAuthor");
 
-// GET /cards/:id — includes author and comments.
+const prisma = new PrismaClient();
+
+// GET /cards/:id — includes author and comments; based on id
 async function getCardById(req, res) {
   try {
     const id = Number(req.params.id);
 
+    // Pass in information about the card's fields; includes author (auth not implemented yet)
     const card = await prisma.card.findUnique({
       where: { id },
       include: { author: true, comments: { include: { author: true } } },
@@ -21,8 +24,10 @@ async function getCardById(req, res) {
   }
 }
 
-// POST /cards — boardId is required in the body here.
+// POST /cards — boardId is required in the body here to make card associated with board
 async function createCard(req, res) {
+  // Extracts information about the cards and uses this to create them;
+  // returns error if required fields are not there and for bad requests
   try {
     const { title, description, gifUrl, boardId, authorName } = req.body;
 
@@ -49,8 +54,7 @@ async function createCard(req, res) {
   }
 }
 
-// PUT /cards/:id — only provided fields change.
-// Handles upvoting (upvotes) and pin/unpin (pinned drives pinnedAt automatically).
+// PUT /cards: Updates card information based on passed in requested information
 async function updateCard(req, res) {
   try {
     const id = Number(req.params.id);
@@ -63,7 +67,7 @@ async function updateCard(req, res) {
     if (upvotes !== undefined) data.upvotes = upvotes;
     if (pinned !== undefined) {
       data.pinned = pinned;
-      data.pinnedAt = pinned ? new Date() : null;
+      data.pinnedAt = new Date()
     }
 
     const card = await prisma.card.update({
@@ -78,7 +82,7 @@ async function updateCard(req, res) {
   }
 }
 
-// DELETE /cards/:id — cascades to its comments.
+// DELETE /cards/:id — cascades to its comments; deletes based on id
 async function deleteCard(req, res) {
   try {
     const id = Number(req.params.id);
@@ -89,8 +93,9 @@ async function deleteCard(req, res) {
   }
 }
 
-// GET /cards/:id/comments — oldest first, each with its author.
+// GET /cards/:id/comments — oldest first, includes author information
 async function getCardComments(req, res) {
+  // Finds cards and deletes them if present; returns not found error if cannot find card
   try {
     const cardId = Number(req.params.id);
 
@@ -111,8 +116,9 @@ async function getCardComments(req, res) {
   }
 }
 
-// POST /cards/:id/comments — author optional (blank -> Guest).
+// POST /cards/:id/comments — needs to include anonymous comments as well
 async function createCardComment(req, res) {
+  // Creates cards with authors (or guest authors); returns 201 if successful PUT request or 400 if not
   try {
     const cardId = Number(req.params.id);
     const { message, authorName } = req.body;
@@ -121,6 +127,7 @@ async function createCardComment(req, res) {
       return res.status(400).json({ error: "Cannot create a comment." });
     }
 
+    // Temporary before authentication implementation
     const authorId = await resolveAuthorId(authorName);
 
     const comment = await prisma.comment.create({

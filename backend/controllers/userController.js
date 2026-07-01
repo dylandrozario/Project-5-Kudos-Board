@@ -1,5 +1,8 @@
-const prisma = require("../prisma/client");
+const { PrismaClient } = require("@prisma/client");
 
+const prisma = new PrismaClient();
+
+// Skeleton for user + authentication; fix when doing authentication
 // Strip the password before sending a user back to the client.
 function safeUser(user) {
   if (!user) return user;

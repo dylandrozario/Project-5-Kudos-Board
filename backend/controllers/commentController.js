@@ -1,6 +1,8 @@
-const prisma = require("../prisma/client");
+const { PrismaClient } = require("@prisma/client");
 
-// GET /comments/:id
+const prisma = new PrismaClient();
+
+// GET /comments/:id: Find a comment based on its associated id
 async function getCommentById(req, res) {
   try {
     const id = Number(req.params.id);
@@ -16,7 +18,7 @@ async function getCommentById(req, res) {
   }
 }
 
-// PUT /comments/:id — update the message.
+// PUT /comments/:id — update the message's contents
 async function updateComment(req, res) {
   try {
     const id = Number(req.params.id);
@@ -33,7 +35,7 @@ async function updateComment(req, res) {
   }
 }
 
-// DELETE /comments/:id
+// DELETE /comments/:id; delete comments based on id
 async function deleteComment(req, res) {
   try {
     const id = Number(req.params.id);
