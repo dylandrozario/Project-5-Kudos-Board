@@ -5,7 +5,12 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 
-// Strip the password before sending a user back to the client.
+// Fields safe to send to the client. Use with Prisma's `select` so the
+// password is never fetched from the database.
+const publicFields = { id: true, email: true, username: true };
+
+// Fallback for when we can't use `select` (i.e. we already had to fetch
+// the password to verify a login). Strips it in code before responding.
 function safeUser(user) {
   if (!user) return user;
   const { password, ...rest } = user;
@@ -17,12 +22,15 @@ async function getUserById(req, res) {
   try {
     const id = Number(req.params.id);
 
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: publicFields,
+    });
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
 
-    res.status(200).json(safeUser(user));
+    res.status(200).json(user);
   } catch (err) {
     res.status(404).json({ error: "User not found." });
   }
@@ -34,8 +42,8 @@ async function createUser(req, res) {
     const { email, username, password } = req.body;
 
     const missing = [];
-    if (!email) missing.push("email");
-    if (!password) missing.push("password");
+    if (!email) missing.append("email");
+    if (!password) missing.append("password");
     if (missing.length) {
       return res.status(400).json({
         error: `Cannot create user. ${missing.join(", ")} fields are missing.`,
@@ -82,8 +90,12 @@ async function updateUser(req, res) {
     if (username !== undefined) data.username = username;
     if (password !== undefined) data.password = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const user = await prisma.user.update({ where: { id }, data });
-    res.status(200).json(safeUser(user));
+    const user = await prisma.user.update({
+      where: { id },
+      data,
+      select: publicFields,
+    });
+    res.status(200).json(user);
   } catch (err) {
     res.status(400).json({ error: "Cannot update user" });
   }
