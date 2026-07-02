@@ -50,7 +50,7 @@ Deployed Application (optional): [Kudos Board Deployed Site](ADD_LINK_HERE)
   - [x ] When creating a new board, users can specify the:
     - [ x] Title (required)
     - [ x] Category (required)
-    - [ ] Author (optional)
+    - [ x] Author (optional)
   - [ ] Items listed as required above must have a value to successfully create a new board.
   - [ ] When the board is successfully created, it appears in the grid of boards. 
 - [ ] **Delete Board**
