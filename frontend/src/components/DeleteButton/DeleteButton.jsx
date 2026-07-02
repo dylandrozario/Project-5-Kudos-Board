@@ -9,13 +9,18 @@ function DeleteButton({
   confirmMessage = 'This action cannot be undone.',
   className = '',
   iconOnly = false,
+  confirm = true,
 }) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleClick = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    setIsConfirmOpen(true);
+    if (confirm) {
+      setIsConfirmOpen(true);
+    } else {
+      onClick?.();
+    }
   };
 
   const handleConfirm = () => {
@@ -38,15 +43,17 @@ function DeleteButton({
         {!iconOnly && <span className="delete-btn__label">{label}</span>}
       </button>
 
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        title={confirmTitle}
-        message={confirmMessage}
-        confirmLabel="Delete"
-        confirmVariant="danger"
-        onConfirm={handleConfirm}
-        onClose={() => setIsConfirmOpen(false)}
-      />
+      {confirm && (
+        <ConfirmModal
+          isOpen={isConfirmOpen}
+          title={confirmTitle}
+          message={confirmMessage}
+          confirmLabel="Delete"
+          confirmVariant="danger"
+          onConfirm={handleConfirm}
+          onClose={() => setIsConfirmOpen(false)}
+        />
+      )}
     </>
   );
 }

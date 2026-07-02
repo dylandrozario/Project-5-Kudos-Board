@@ -5,6 +5,7 @@ import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
 import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import AuthModal from '../../components/AuthModal/AuthModal';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import Footer from '../../components/Footer/Footer';
 import axios from "axios";
 import { getStoredAuth, getCurrentUser, login, register, logout } from '../../auth';
@@ -18,6 +19,7 @@ function HomePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [auth, setAuth] = useState(getStoredAuth); // { token, user } | null
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [boardPendingDelete, setBoardPendingDelete] = useState(null);
   const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
 
   const isAuthenticated = !!auth;
@@ -93,12 +95,20 @@ function HomePage() {
     }
   };
 
-  const handleDeleteBoard = async (id) => {
+  // The trash icon on each BoardCard just asks HomePage to open its shared
+  // ConfirmModal — no per-card modal, so hovering off the card doesn't flicker.
+  const handleRequestDeleteBoard = (board) => setBoardPendingDelete(board);
+
+  const handleConfirmDeleteBoard = async () => {
+    if (!boardPendingDelete) return;
+    const id = boardPendingDelete.id;
     try {
       await axios.delete(`${API_BASE_URL}/boards/${id}`);
       setBoards((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Failed to delete board:", err);
+    } finally {
+      setBoardPendingDelete(null);
     }
   };
 
@@ -119,7 +129,16 @@ function HomePage() {
         selected={selectedCategory}
         onSelect={setSelectedCategory}
       />
-      <BoardGrid boards={filteredBoards} onDeleteBoard={handleDeleteBoard} />
+      <BoardGrid boards={filteredBoards} onDeleteBoard={handleRequestDeleteBoard} />
+      <ConfirmModal
+        isOpen={!!boardPendingDelete}
+        title={boardPendingDelete ? `Delete "${boardPendingDelete.title}"?` : ''}
+        message="This will remove the board and all of its cards and comments. This action cannot be undone."
+        confirmLabel="Delete"
+        confirmVariant="danger"
+        onConfirm={handleConfirmDeleteBoard}
+        onClose={() => setBoardPendingDelete(null)}
+      />
       <CreateBoardModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}

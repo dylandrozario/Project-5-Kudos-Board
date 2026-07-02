@@ -6,6 +6,8 @@ import BoardBanner from '../../components/BoardBanner/BoardBanner';
 import CardGrid from '../../components/CardGrid/CardGrid';
 import AddCardModal from '../../components/AddCardModal/AddCardModal';
 import CommentModal from '../../components/CommentModal/CommentModal';
+import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
+import DeleteButton from '../../components/DeleteButton/DeleteButton';
 import Footer from '../../components/Footer/Footer';
 import { getStoredAuth, getCurrentUser } from '../../auth';
 import './BoardPage.css';
@@ -34,6 +36,7 @@ function BoardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
+  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [commentsModalCardId, setCommentsModalCardId] = useState(null);
 
   // Owner is the signed-in user; falls back to the shared Guest account.
@@ -186,6 +189,27 @@ function BoardPage() {
     );
   };
 
+  const handleDeleteBoard = async () => {
+    try {
+      await axios.delete(`${API_BASE_URL}/boards/${boardId}`);
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to delete board:', err);
+    }
+  };
+
+  const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
+    // Signed-in users attribute automatically; guests can type a name or fall back to Guest.
+    const payload = { title, category, imageUrl };
+    if (isAuthenticated) payload.authorId = currentUser.id;
+    else if (authorName) payload.authorName = authorName;
+    else payload.authorId = currentUser.id;
+
+    await axios.post(`${API_BASE_URL}/boards`, payload);
+    // Send the user to the homepage grid so they can see their new board.
+    navigate('/');
+  };
+
   const handleDeleteComment = async (commentId) => {
     try {
       await axios.delete(`${API_BASE_URL}/comments/${commentId}`);
@@ -210,7 +234,7 @@ function BoardPage() {
           onSearchInputChange={() => {}}
           onSearchSubmit={() => {}}
           onSearchClear={() => {}}
-          onCreateBoard={() => {}}
+          onCreateBoard={() => setIsCreateBoardOpen(true)}
           user={currentUser}
         />
         <main className="board-page__loading">Loading board…</main>
@@ -229,7 +253,7 @@ function BoardPage() {
           onSearchInputChange={() => {}}
           onSearchSubmit={() => {}}
           onSearchClear={() => {}}
-          onCreateBoard={() => {}}
+          onCreateBoard={() => setIsCreateBoardOpen(true)}
           user={currentUser}
         />
         <main className="board-page__missing">
@@ -250,7 +274,7 @@ function BoardPage() {
         onSearchInputChange={() => {}}
         onSearchSubmit={() => {}}
         onSearchClear={() => {}}
-        onCreateBoard={() => {}}
+        onCreateBoard={() => setIsCreateBoardOpen(true)}
         user={currentUser}
       />
 
@@ -268,6 +292,15 @@ function BoardPage() {
         onDelete={handleDelete}
       />
 
+      <div className="board-page__delete">
+        <DeleteButton
+          onClick={handleDeleteBoard}
+          label="Delete board"
+          confirmTitle={`Delete "${board.title}"?`}
+          confirmMessage="This will remove the board and all of its cards and comments. This action cannot be undone."
+        />
+      </div>
+
       <AddCardModal
         isOpen={isAddCardOpen}
         boardId={board.id}
@@ -282,6 +315,13 @@ function BoardPage() {
         onClose={() => setCommentsModalCardId(null)}
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
+        requireAuthorName={!isAuthenticated}
+      />
+
+      <CreateBoardModal
+        isOpen={isCreateBoardOpen}
+        onClose={() => setIsCreateBoardOpen(false)}
+        onCreate={handleCreateBoard}
         requireAuthorName={!isAuthenticated}
       />
 

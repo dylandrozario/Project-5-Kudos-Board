@@ -53,3 +53,10 @@
 .board-page__missing button:hover {
   background: var(--bg-hover);
 }
+
+.board-page__delete {
+  display: flex;
+  justify-content: center;
+  padding: 8px 20px 32px;
+  background: var(--bg-muted);
+}

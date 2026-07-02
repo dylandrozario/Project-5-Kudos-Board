@@ -22,11 +22,10 @@ function BoardCard({ board, onDelete }) {
         </div>
       </Link>
       <DeleteButton
-        onClick={() => onDelete?.(board.id)}
+        onClick={() => onDelete?.(board)}
         className="board-card__delete"
-        confirmTitle={`Delete "${board.title}"?`}
-        confirmMessage="This will remove the board and all of its cards and comments. This action cannot be undone."
         iconOnly
+        confirm={false}
       />
     </article>
   );
