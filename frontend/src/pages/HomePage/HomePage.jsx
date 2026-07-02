@@ -5,6 +5,7 @@ import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
 import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import AuthModal from '../../components/AuthModal/AuthModal';
+import UserModal from '../../components/UserModal/UserModal';
 import Footer from '../../components/Footer/Footer';
 import axios from "axios";
 import { getStoredAuth, getCurrentUser, login, register, logout } from '../../auth';
@@ -18,6 +19,7 @@ function HomePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [auth, setAuth] = useState(getStoredAuth); // { token, user } | null
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isUserOpen, setIsUserOpen] = useState(false);
   const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
 
   const isAuthenticated = !!auth;
@@ -60,14 +62,20 @@ function HomePage() {
   const handleLogin = async (credentials) => setAuth(await login(credentials));
   const handleRegister = async (fields) => setAuth(await register(fields));
 
-  // Signed-in users can log out; guests open the auth overlay.
-  const handleUserClick = () => {
-    if (isAuthenticated) {
-      logout();
-      setAuth(null);
-    } else {
-      setIsAuthOpen(true);
-    }
+  // The avatar opens an account modal for everyone; log out / sign in are
+  // deliberate actions taken from inside that modal.
+  const handleUserClick = () => setIsUserOpen(true);
+
+  const handleLogout = () => {
+    logout();
+    setAuth(null);
+    setIsUserOpen(false);
+  };
+
+  // From the account modal, a guest jumps to the sign-in form.
+  const handleOpenAuth = () => {
+    setIsUserOpen(false);
+    setIsAuthOpen(true);
   };
 
   const handleSearchSubmit = () => setSearchQuery(searchInput);
@@ -125,6 +133,14 @@ function HomePage() {
         onClose={() => setIsCreateOpen(false)}
         onCreate={handleCreateBoard}
         requireAuthorName={!isAuthenticated}
+      />
+      <UserModal
+        isOpen={isUserOpen}
+        onClose={() => setIsUserOpen(false)}
+        user={currentUser}
+        isAuthenticated={isAuthenticated}
+        onLogin={handleOpenAuth}
+        onLogout={handleLogout}
       />
       <AuthModal
         isOpen={isAuthOpen}
