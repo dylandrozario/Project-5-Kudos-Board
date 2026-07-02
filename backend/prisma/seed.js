@@ -85,6 +85,19 @@ const MOCK_CARDS = [
 const GUEST_USER_ID = 1;
 
 async function main() {
+  // Safety valve: refuse to run against production unless explicitly forced.
+  // Prevents an accidental terminal run from wiping/duplicating the live DB.
+  if (process.env.NODE_ENV === "production" && process.env.FORCE_SEED !== "true") {
+    console.log("NODE_ENV=production — skipping seed. Set FORCE_SEED=true to override.");
+    return;
+  }
+
+  // Clear-then-seed so re-running never stacks duplicate boards/cards.
+  // Order matters: children before parents (comments → cards → boards).
+  await prisma.comment.deleteMany();
+  await prisma.card.deleteMany();
+  await prisma.board.deleteMany();
+
   // Boards require an author (User). The frontend hardcodes authorId: 1
   // as the fallback for anonymous content, so pin the Guest user to id 1
   // regardless of insertion order.
