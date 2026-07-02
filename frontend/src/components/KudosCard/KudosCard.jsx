@@ -5,6 +5,7 @@ import DeleteButton from '../DeleteButton/DeleteButton';
 import './KudosCard.css';
 
 function KudosCard({ card, onUpvote, onOpenComments, onPin, onDelete }) {
+  const authorName = card.author?.username;
   return (
     <article className={`kudos-card ${card.pinned ? 'kudos-card--pinned' : ''}`}>
       <header className="kudos-card__head">
@@ -19,6 +20,10 @@ function KudosCard({ card, onUpvote, onOpenComments, onPin, onDelete }) {
       )}
 
       {card.description && <p className="kudos-card__body">{card.description}</p>}
+
+      {authorName && (
+        <p className="kudos-card__author">— {authorName}</p>
+      )}
 
       <footer className="kudos-card__actions">
         <UpvoteButton count={card.upvotes} onClick={() => onUpvote?.(card.id)} />

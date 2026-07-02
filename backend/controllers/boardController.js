@@ -44,7 +44,8 @@ async function getBoards(req, res) {
     const boards = await prisma.board.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take: totalShown
+      take: totalShown,
+      include: { author: true },
     });
 
     res.status(200).json(boards);
@@ -73,7 +74,7 @@ async function createBoard(req, res) {
         imageUrl: imageUrl || "",
         authorId: resolvedAuthorId,
       },
-      include: { cards: true },
+      include: { cards: true, author: true },
     });
 
     res.status(201).json(board);

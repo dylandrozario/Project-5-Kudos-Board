@@ -4,6 +4,7 @@ import DeleteButton from '../DeleteButton/DeleteButton';
 import './BoardCard.css';
 
 function BoardCard({ board, onDelete }) {
+  const authorName = board.author?.username;
   return (
     <article className="board-card">
       <Link
@@ -17,7 +18,12 @@ function BoardCard({ board, onDelete }) {
         <div className="board-card__body">
           <div className="board-card__text">
             <h3 className="board-card__title">{board.title}</h3>
-            <CategoryBadge category={board.category} />
+            <div className="board-card__meta">
+              <CategoryBadge category={board.category} />
+              {authorName && (
+                <span className="board-card__author">by {authorName}</span>
+              )}
+            </div>
           </div>
         </div>
       </Link>
