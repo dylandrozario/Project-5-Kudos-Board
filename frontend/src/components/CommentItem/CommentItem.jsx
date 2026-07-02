@@ -15,7 +15,8 @@ function CommentItem({ comment, onDelete }) {
       <DeleteButton
         onClick={() => onDelete?.(comment.id)}
         className="comment-item__delete"
-        confirmMessage="Delete this comment?"
+        confirmTitle="Delete this comment?"
+        confirmMessage="This action cannot be undone."
         iconOnly
       />
     </li>

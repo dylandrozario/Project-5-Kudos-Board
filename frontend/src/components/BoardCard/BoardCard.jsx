@@ -24,7 +24,8 @@ function BoardCard({ board, onDelete }) {
       <DeleteButton
         onClick={() => onDelete?.(board.id)}
         className="board-card__delete"
-        confirmMessage={`Delete board "${board.title}"?`}
+        confirmTitle={`Delete "${board.title}"?`}
+        confirmMessage="This will remove the board and all of its cards and comments. This action cannot be undone."
         iconOnly
       />
     </article>
