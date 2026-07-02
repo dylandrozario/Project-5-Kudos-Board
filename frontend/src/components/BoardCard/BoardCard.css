@@ -36,6 +36,7 @@
 .board-card__body {
   padding: 12px 14px 14px;
   padding-right: 40px;
+  min-height: 56px;
 }
 
 .board-card__text {
