@@ -42,8 +42,8 @@ async function createUser(req, res) {
     const { email, username, password } = req.body;
 
     const missing = [];
-    if (!email) missing.append("email");
-    if (!password) missing.append("password");
+    if (!email) missing.push("email");
+    if (!password) missing.push("password");
     if (missing.length) {
       return res.status(400).json({
         error: `Cannot create user. ${missing.join(", ")} fields are missing.`,
@@ -75,6 +75,7 @@ async function createUser(req, res) {
 
     res.status(201).json(safeUser(user));
   } catch (err) {
+    console.error("createUser failed:", err);
     res.status(400).json({ error: "Cannot create user. fields are missing." });
   }
 }

@@ -5,10 +5,11 @@ import './CreateBoardModal.css';
 
 const CATEGORY_OPTIONS = ['Celebration', 'Thank you', 'Inspiration'];
 
-function CreateBoardModal({ isOpen, onClose, onCreate }) {
+function CreateBoardModal({ isOpen, onClose, onCreate, requireAuthorName = false }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
   const [imageUrl, setImageUrl] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,6 +17,7 @@ function CreateBoardModal({ isOpen, onClose, onCreate }) {
     setTitle('');
     setCategory(CATEGORY_OPTIONS[0]);
     setImageUrl('');
+    setAuthorName('');
     setError(null);
   };
 
@@ -37,6 +39,7 @@ function CreateBoardModal({ isOpen, onClose, onCreate }) {
         title: title.trim(),
         category,
         imageUrl: imageUrl.trim() || undefined,
+        authorName: authorName.trim() || undefined,
       });
       reset();
       onClose?.();
@@ -81,6 +84,18 @@ function CreateBoardModal({ isOpen, onClose, onCreate }) {
             placeholder="https://…"
           />
         </label>
+
+        {requireAuthorName && (
+          <label className="create-board-form__field">
+            <span>Your name (optional)</span>
+            <input
+              type="text"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Anonymous"
+            />
+          </label>
+        )}
 
         {error && <p className="create-board-form__error">{error}</p>}
 

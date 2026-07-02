@@ -4,8 +4,10 @@ import Banner from '../../components/Banner/Banner';
 import CategoryTabs from '../../components/CategoryTabs/CategoryTabs';
 import BoardGrid from '../../components/BoardGrid/BoardGrid';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
+import AuthModal from '../../components/AuthModal/AuthModal';
 import Footer from '../../components/Footer/Footer';
 import axios from "axios";
+import { getStoredAuth, getCurrentUser, login, register, logout } from '../../auth';
 import './HomePage.css';
 
 function HomePage() {
@@ -14,9 +16,12 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [auth, setAuth] = useState(getStoredAuth); // { token, user } | null
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
-  
-  const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
+
+  const isAuthenticated = !!auth;
+  const currentUser = getCurrentUser();
 
   const filteredBoards = useMemo(() => {
     let list = [...boards];
@@ -51,6 +56,20 @@ function HomePage() {
     fetchBoards();
   }, []);
 
+  // These wrap the auth helpers so local state updates and the page re-renders.
+  const handleLogin = async (credentials) => setAuth(await login(credentials));
+  const handleRegister = async (fields) => setAuth(await register(fields));
+
+  // Signed-in users can log out; guests open the auth overlay.
+  const handleUserClick = () => {
+    if (isAuthenticated) {
+      logout();
+      setAuth(null);
+    } else {
+      setIsAuthOpen(true);
+    }
+  };
+
   const handleSearchSubmit = () => setSearchQuery(searchInput);
 
   const handleSearchClear = () => {
@@ -58,13 +77,16 @@ function HomePage() {
     setSearchQuery('');
   };
 
-  const handleCreateBoard = async ({ title, category, imageUrl }) => {
+  const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/boards`, {
         title,
         category,
         imageUrl,
+        // Owner is the signed-in user automatically; guests are attributed to
+        // the shared Guest account but may supply a display name.
         authorId: currentUser.id,
+        authorName: isAuthenticated ? undefined : authorName,
       });
       setBoards((prev) => [response.data, ...prev]);
     } catch (err) {
@@ -90,6 +112,7 @@ function HomePage() {
         onSearchClear={handleSearchClear}
         onCreateBoard={() => setIsCreateOpen(true)}
         user={currentUser}
+        onUserClick={handleUserClick}
       />
       <Banner />
       <CategoryTabs
@@ -102,6 +125,13 @@ function HomePage() {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onCreate={handleCreateBoard}
+        requireAuthorName={!isAuthenticated}
+      />
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
       />
       <Footer />
     </div>

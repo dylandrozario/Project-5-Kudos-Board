@@ -5,10 +5,11 @@ import GiphyPicker from '../GiphyPicker/GiphyPicker';
 import './AddCardModal.css';
 
 // `boardId` is accepted to match the planning spec; the backend infers it from the route.
-function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
+function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate, requireAuthorName = false }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [gifUrl, setGifUrl] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,6 +17,7 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
     setTitle('');
     setDescription('');
     setGifUrl('');
+    setAuthorName('');
     setError(null);
   };
 
@@ -37,6 +39,7 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
         title: title.trim(),
         description: description.trim(),
         gifUrl,
+        authorName: authorName.trim() || undefined,
       });
       reset();
       onClose?.();
@@ -77,6 +80,18 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
           <span>Gif</span>
           <GiphyPicker value={gifUrl} onChange={setGifUrl} />
         </div>
+
+        {requireAuthorName && (
+          <label className="add-card-form__field">
+            <span>Your name (optional)</span>
+            <input
+              type="text"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Anonymous"
+            />
+          </label>
+        )}
 
         {error && <p className="add-card-form__error">{error}</p>}
 

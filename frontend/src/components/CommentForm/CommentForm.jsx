@@ -2,8 +2,9 @@ import { useState } from 'react';
 import Button from '../Button/Button';
 import './CommentForm.css';
 
-function CommentForm({ cardId, onSubmit }) {
+function CommentForm({ cardId, onSubmit, requireAuthorName = false }) {
   const [message, setMessage] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -11,8 +12,9 @@ function CommentForm({ cardId, onSubmit }) {
     if (!message.trim()) return;
     setIsSubmitting(true);
     try {
-      await onSubmit?.(cardId, message.trim());
+      await onSubmit?.(cardId, message.trim(), authorName.trim() || undefined);
       setMessage('');
+      setAuthorName('');
     } finally {
       setIsSubmitting(false);
     }
@@ -28,6 +30,15 @@ function CommentForm({ cardId, onSubmit }) {
         rows={2}
         required
       />
+      {requireAuthorName && (
+        <input
+          className="comment-form__author"
+          type="text"
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          placeholder="Your name (optional)"
+        />
+      )}
       <div className="comment-form__row">
         <Button variant="primary" type="submit" disabled={isSubmitting || !message.trim()}>
           {isSubmitting ? 'Posting…' : 'Post'}
