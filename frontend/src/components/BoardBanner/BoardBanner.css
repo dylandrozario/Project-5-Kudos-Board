@@ -37,11 +37,30 @@
   gap: 4px;
 }
 
+.board-banner__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .board-banner__category {
   font-size: 11px;
   letter-spacing: 0.12em;
   color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
+}
+
+.board-banner__author {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.board-banner__author::before {
+  content: '·';
+  margin-right: 8px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .board-banner__title {
