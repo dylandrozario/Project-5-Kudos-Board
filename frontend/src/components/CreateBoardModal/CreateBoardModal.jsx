@@ -28,8 +28,8 @@ function CreateBoardModal({ isOpen, onClose, onCreate, requireAuthorName = false
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !category) {
-      setError('Title and category are required.');
+    if (!title.trim() || !category || !imageUrl.trim()) {
+      setError('Title, category, and image URL are all required.');
       return;
     }
     setIsSubmitting(true);
@@ -38,7 +38,7 @@ function CreateBoardModal({ isOpen, onClose, onCreate, requireAuthorName = false
       await onCreate?.({
         title: title.trim(),
         category,
-        imageUrl: imageUrl.trim() || undefined,
+        imageUrl: imageUrl.trim(),
         authorName: authorName.trim() || undefined,
       });
       reset();
@@ -76,12 +76,13 @@ function CreateBoardModal({ isOpen, onClose, onCreate, requireAuthorName = false
         </label>
 
         <label className="create-board-form__field">
-          <span>Image URL (optional)</span>
+          <span>Image URL</span>
           <input
             type="url"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="https://…"
+            required
           />
         </label>
 

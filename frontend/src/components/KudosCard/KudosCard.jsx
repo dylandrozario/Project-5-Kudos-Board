@@ -29,7 +29,8 @@ function KudosCard({ card, onUpvote, onOpenComments, onPin, onDelete }) {
         <DeleteButton
           onClick={() => onDelete?.(card.id)}
           className="kudos-card__delete"
-          confirmMessage="Delete this card?"
+          confirmTitle="Delete this card?"
+          confirmMessage="The card and all of its comments will be removed. This action cannot be undone."
           iconOnly
         />
       </footer>
