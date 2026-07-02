@@ -82,12 +82,17 @@ const MOCK_CARDS = [
   },
 ];
 
+const GUEST_USER_ID = 1;
+
 async function main() {
-  // Boards require an author (User), so create/find one first.
+  // Boards require an author (User). The frontend hardcodes authorId: 1
+  // as the fallback for anonymous content, so pin the Guest user to id 1
+  // regardless of insertion order.
   const user = await prisma.user.upsert({
-    where: { email: "guest@kudos.local" },
+    where: { id: GUEST_USER_ID },
     update: {},
     create: {
+      id: GUEST_USER_ID,
       email: "guest@kudos.local",
       username: "Guest",
       password: "changeme", // placeholder — hash if you add real auth

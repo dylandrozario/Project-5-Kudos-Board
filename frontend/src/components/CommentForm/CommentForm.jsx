@@ -4,6 +4,7 @@ import './CommentForm.css';
 
 function CommentForm({ cardId, onSubmit }) {
   const [message, setMessage] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -11,8 +12,9 @@ function CommentForm({ cardId, onSubmit }) {
     if (!message.trim()) return;
     setIsSubmitting(true);
     try {
-      await onSubmit?.(cardId, message.trim());
+      await onSubmit?.(cardId, message.trim(), authorName.trim() || undefined);
       setMessage('');
+      setAuthorName('');
     } finally {
       setIsSubmitting(false);
     }
@@ -29,6 +31,13 @@ function CommentForm({ cardId, onSubmit }) {
         required
       />
       <div className="comment-form__row">
+        <input
+          type="text"
+          className="comment-form__author"
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          placeholder="Author (optional)"
+        />
         <Button variant="primary" type="submit" disabled={isSubmitting || !message.trim()}>
           {isSubmitting ? 'Posting…' : 'Post'}
         </Button>

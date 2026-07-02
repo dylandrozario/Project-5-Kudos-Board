@@ -9,6 +9,7 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [gifUrl, setGifUrl] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,6 +17,7 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
     setTitle('');
     setDescription('');
     setGifUrl('');
+    setAuthorName('');
     setError(null);
   };
 
@@ -37,6 +39,7 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
         title: title.trim(),
         description: description.trim(),
         gifUrl,
+        authorName: authorName.trim() || undefined,
       });
       reset();
       onClose?.();
@@ -77,6 +80,16 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
           <span>Gif</span>
           <GiphyPicker value={gifUrl} onChange={setGifUrl} />
         </div>
+
+        <label className="add-card-form__field">
+          <span>Author (optional)</span>
+          <input
+            type="text"
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            placeholder="Leave blank to post as Guest"
+          />
+        </label>
 
         {error && <p className="add-card-form__error">{error}</p>}
 

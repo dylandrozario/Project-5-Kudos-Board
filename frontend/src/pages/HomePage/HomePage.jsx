@@ -58,14 +58,15 @@ function HomePage() {
     setSearchQuery('');
   };
 
-  const handleCreateBoard = async ({ title, category, imageUrl }) => {
+  const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/boards`, {
-        title,
-        category,
-        imageUrl,
-        authorId: currentUser.id,
-      });
+      // Send authorName when provided so the backend can upsert a User for them;
+      // otherwise fall back to the current (Guest) user's id.
+      const payload = { title, category, imageUrl };
+      if (authorName) payload.authorName = authorName;
+      else payload.authorId = currentUser.id;
+
+      const response = await axios.post(`${API_BASE_URL}/boards`, payload);
       setBoards((prev) => [response.data, ...prev]);
     } catch (err) {
       console.error("Failed to create board:", err);

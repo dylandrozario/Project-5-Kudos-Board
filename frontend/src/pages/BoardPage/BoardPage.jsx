@@ -89,17 +89,18 @@ function BoardPage() {
     }
   };
 
-  const handleAddCard = async ({ title, description, gifUrl }) => {
-    // No real auth yet — everything created anonymously is attributed to Guest (id 1).
-    const authorId = currentUser.id;
-    const response = await axios.post(`${API_BASE_URL}/cards`, {
-      title,
-      description,
-      gifUrl,
-      boardId,
-      authorId,
-    });
-    const author = await fetchAuthor(response.data.authorId ?? authorId);
+  const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
+    // Send authorName when provided so the backend can upsert a User;
+    // otherwise fall back to the current (Guest) user's id.
+    const payload = { title, description, gifUrl, boardId };
+    if (authorName) payload.authorName = authorName;
+    else payload.authorId = currentUser.id;
+
+    const response = await axios.post(`${API_BASE_URL}/cards`, payload);
+
+    // Backend includes { author: true } on create; fallback fetch only if missing.
+    const author =
+      response.data.author ?? (await fetchAuthor(response.data.authorId));
     const created = {
       ...response.data,
       author,
@@ -163,13 +164,16 @@ function BoardPage() {
     }
   };
 
-  const handleAddComment = async (cardId, message) => {
-    const authorId = currentUser.id;
-    const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, {
-      message,
-      authorId,
-    });
-    const author = await fetchAuthor(response.data.authorId ?? authorId);
+  const handleAddComment = async (cardId, message, authorName) => {
+    const payload = { message };
+    if (authorName) payload.authorName = authorName;
+    else payload.authorId = currentUser.id;
+
+    const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, payload);
+
+    // Backend includes { author: true } on create; fallback fetch only if missing.
+    const author =
+      response.data.author ?? (await fetchAuthor(response.data.authorId));
     const newComment = { ...response.data, author };
     updateCards((cards) =>
       cards.map((c) =>
