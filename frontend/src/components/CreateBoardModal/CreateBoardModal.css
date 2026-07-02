@@ -30,13 +30,13 @@
 
 .create-board-form__field input:focus,
 .create-board-form__field select:focus {
-  border-color: #ff6a3d;
+  border-color: var(--brand);
   box-shadow: 0 0 0 2px rgba(255, 106, 61, 0.18);
 }
 
 .create-board-form__error {
   margin: 0;
-  color: #ff6a6a;
+  color: var(--brand-soft);
   font-size: 13px;
 }
 

@@ -119,12 +119,12 @@ function BoardPage() {
   };
 
   const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
-    // Signed-in users are attributed automatically; a guest who supplies a
-    // display name gets a User upserted by the backend. Send exactly one
-    // identifier — resolveAuthorId ignores authorName when authorId is present.
+    // Guests can't name themselves — they're always attributed to the shared
+    // Guest account. Only a signed-in user may supply a custom display name;
+    // otherwise the card is credited to their own account.
     const payload = { title, description, gifUrl, boardId };
-    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
-    else payload.authorName = authorName;
+    if (isAuthenticated && authorName) payload.authorName = authorName;
+    else payload.authorId = currentUser.id;
 
     const response = await axios.post(`${API_BASE_URL}/cards`, payload);
 
@@ -196,8 +196,8 @@ function BoardPage() {
 
   const handleAddComment = async (cardId, message, authorName) => {
     const payload = { message };
-    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
-    else payload.authorName = authorName;
+    if (isAuthenticated && authorName) payload.authorName = authorName;
+    else payload.authorId = currentUser.id;
 
     const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, payload);
 
@@ -214,7 +214,10 @@ function BoardPage() {
 
   const handleDeleteBoard = async () => {
     try {
-      await axios.delete(`${API_BASE_URL}/boards/${boardId}`);
+      // Send the requester so the backend can enforce owner-only deletion.
+      await axios.delete(`${API_BASE_URL}/boards/${boardId}`, {
+        data: { userId: currentUser.id },
+      });
       navigate('/');
     } catch (err) {
       console.error('Failed to delete board:', err);
@@ -222,10 +225,10 @@ function BoardPage() {
   };
 
   const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
-    // Signed-in users attribute automatically; guests can type a name or fall back to Guest.
+    // Guests fall back to the shared Guest account; only signed-in users may
+    // supply a custom display name, else they're credited to their account.
     const payload = { title, category, imageUrl };
-    if (isAuthenticated) payload.authorId = currentUser.id;
-    else if (authorName) payload.authorName = authorName;
+    if (isAuthenticated && authorName) payload.authorName = authorName;
     else payload.authorId = currentUser.id;
 
     await axios.post(`${API_BASE_URL}/boards`, payload);
@@ -319,21 +322,23 @@ function BoardPage() {
         onDelete={handleDelete}
       />
 
-      <div className="board-page__delete">
-        <DeleteButton
-          onClick={handleDeleteBoard}
-          label="Delete board"
-          confirmTitle={`Delete "${board.title}"?`}
-          confirmMessage="This will remove the board and all of its cards and comments. This action cannot be undone."
-        />
-      </div>
+      {board.authorId === currentUser.id && (
+        <div className="board-page__delete">
+          <DeleteButton
+            onClick={handleDeleteBoard}
+            label="Delete board"
+            confirmTitle={`Delete "${board.title}"?`}
+            confirmMessage="This will remove the board and all of its cards and comments. This action cannot be undone."
+          />
+        </div>
+      )}
 
       <AddCardModal
         isOpen={isAddCardOpen}
         boardId={board.id}
         onClose={() => setIsAddCardOpen(false)}
         onCreate={handleAddCard}
-        requireAuthorName={!isAuthenticated}
+        requireAuthorName={isAuthenticated}
       />
 
       <CommentModal
@@ -342,14 +347,14 @@ function BoardPage() {
         onClose={() => setCommentsModalCardId(null)}
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
-        requireAuthorName={!isAuthenticated}
+        requireAuthorName={isAuthenticated}
       />
 
       <CreateBoardModal
         isOpen={isCreateBoardOpen}
         onClose={() => setIsCreateBoardOpen(false)}
         onCreate={handleCreateBoard}
-        requireAuthorName={!isAuthenticated}
+        requireAuthorName={isAuthenticated}
       />
 
       <UserModal

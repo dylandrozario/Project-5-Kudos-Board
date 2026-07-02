@@ -16,7 +16,7 @@
 
 .upvote-btn:hover {
   background: rgba(255, 106, 61, 0.12);
-  color: #ff6a3d;
+  color: var(--brand);
 }
 
 .upvote-btn svg {

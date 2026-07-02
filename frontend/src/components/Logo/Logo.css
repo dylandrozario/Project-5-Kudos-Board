@@ -2,7 +2,7 @@
   display: inline-flex;
   flex-direction: column;
   text-decoration: none;
-  color: #ff6a3d;
+  color: var(--brand);
   font-weight: 800;
   font-size: 13px;
   line-height: 1.05;

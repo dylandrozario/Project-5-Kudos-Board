@@ -30,8 +30,9 @@ export function getCurrentUser() {
   return getStoredAuth()?.user ?? GUEST_USER;
 }
 
-export async function login({ email, password }) {
-  const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
+// `identifier` may be an email or a username.
+export async function login({ identifier, password }) {
+  const response = await axios.post(`${API_BASE_URL}/login`, { identifier, password });
   setStoredAuth(response.data); // { token, user }
   return response.data;
 }
@@ -39,7 +40,7 @@ export async function login({ email, password }) {
 export async function register({ email, username, password }) {
   await axios.post(`${API_BASE_URL}/users`, { email, username, password });
   // Backend registration doesn't return a token, so log in to get one.
-  return login({ email, password });
+  return login({ identifier: email, password });
 }
 
 export function logout() {

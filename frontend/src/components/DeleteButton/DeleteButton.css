@@ -42,7 +42,7 @@
 
 .delete-btn--icon-only:hover {
   background: rgba(210, 52, 52, 0.16);
-  color: #ff6a6a;
+  color: var(--brand-soft);
 }
 
 .delete-btn--icon-only svg {

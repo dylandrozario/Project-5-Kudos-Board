@@ -116,11 +116,17 @@ async function deleteUser(req, res) {
 // POST /login — authenticate and return a message.
 async function login(req, res) {
   try {
-    const { email, password } = req.body;
+    // Accept either an email or a username as the identifier. `identifier` is
+    // the preferred field; `email` is still honored for backward compatibility.
+    const { identifier, email, password } = req.body;
+    const login = identifier ?? email;
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    // Compare the attempt against the stored hash. Same 401 whether the email
-    // is unknown or the password is wrong, so we don't leak which one exists.
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ email: login }, { username: login }] },
+    });
+    // Compare the attempt against the stored hash. Same 401 whether the
+    // identifier is unknown or the password is wrong, so we don't leak which
+    // one exists.
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials." });
     }

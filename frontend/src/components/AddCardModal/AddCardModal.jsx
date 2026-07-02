@@ -83,12 +83,12 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate, requireAut
 
         {requireAuthorName && (
           <label className="add-card-form__field">
-            <span>Your name (optional)</span>
+            <span>Credit as (optional)</span>
             <input
               type="text"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Anonymous"
+              placeholder="Your username"
             />
           </label>
         )}

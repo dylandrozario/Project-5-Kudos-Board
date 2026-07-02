@@ -18,6 +18,6 @@
 
 .category-tab--active,
 .category-tab--active:hover {
-  background: #ff6a3d;
+  background: var(--brand);
   color: #fff;
 }

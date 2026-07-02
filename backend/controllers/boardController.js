@@ -133,10 +133,25 @@ async function updateBoard(req, res) {
   }
 }
 
-// DELETE /boards/:id — cascades to cards and their comments; done based on id
+// DELETE /boards/:id — cascades to cards and their comments; done based on id.
+// A board may only be deleted by its owner: the requester passes their userId
+// in the body and it must match the board's authorId.
 async function deleteBoard(req, res) {
   try {
     const id = Number(req.params.id);
+    const { userId } = req.body;
+
+    const board = await prisma.board.findUnique({ where: { id } });
+    if (!board) {
+      return res.status(404).json({ error: "Board not found" });
+    }
+
+    if (typeof userId !== "number" || board.authorId !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You can only delete boards you own." });
+    }
+
     await prisma.board.delete({ where: { id } });
     res.status(200).json({ message: "Board deleted successfully." });
   } catch (err) {

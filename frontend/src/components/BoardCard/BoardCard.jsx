@@ -3,7 +3,7 @@ import CategoryBadge from '../CategoryBadge/CategoryBadge';
 import DeleteButton from '../DeleteButton/DeleteButton';
 import './BoardCard.css';
 
-function BoardCard({ board, onDelete }) {
+function BoardCard({ board, onDelete, canDelete = true }) {
   const authorName = board.author?.username;
   return (
     <article className="board-card">
@@ -27,12 +27,14 @@ function BoardCard({ board, onDelete }) {
           </div>
         </div>
       </Link>
-      <DeleteButton
-        onClick={() => onDelete?.(board)}
-        className="board-card__delete"
-        iconOnly
-        confirm={false}
-      />
+      {canDelete && (
+        <DeleteButton
+          onClick={() => onDelete?.(board)}
+          className="board-card__delete"
+          iconOnly
+          confirm={false}
+        />
+      )}
     </article>
   );
 }

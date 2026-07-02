@@ -1,6 +1,6 @@
 import './Avatar.css';
 
-const COLORS = ['#4f8cff', '#ff6a3d', '#a259ff', '#22a559', '#e8a93c', '#e8589c', '#3dc3c8'];
+const COLORS = ['#4f8cff', '#e60023', '#a259ff', '#22a559', '#e8a93c', '#e8589c', '#3dc3c8'];
 
 function pickColor(username) {
   if (!username) return COLORS[0];

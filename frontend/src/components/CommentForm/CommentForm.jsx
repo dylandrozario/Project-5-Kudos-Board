@@ -36,7 +36,7 @@ function CommentForm({ cardId, onSubmit, requireAuthorName = false }) {
           type="text"
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
-          placeholder="Your name (optional)"
+          placeholder="Credit as (optional)"
         />
       )}
       <div className="comment-form__row">

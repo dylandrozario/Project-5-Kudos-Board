@@ -26,11 +26,11 @@
 .btn--lg { font-size: 15px; padding: 10px 20px; }
 
 .btn--primary {
-  background: #ff6a3d;
+  background: var(--brand);
   color: #fff;
 }
 .btn--primary:hover:not(:disabled) {
-  background: #f15a2b;
+  background: var(--brand-hover);
 }
 
 .btn--secondary {

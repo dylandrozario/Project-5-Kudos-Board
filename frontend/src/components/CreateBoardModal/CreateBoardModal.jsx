@@ -88,12 +88,12 @@ function CreateBoardModal({ isOpen, onClose, onCreate, requireAuthorName = false
 
         {requireAuthorName && (
           <label className="create-board-form__field">
-            <span>Your name (optional)</span>
+            <span>Credit as (optional)</span>
             <input
               type="text"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Anonymous"
+              placeholder="Your username"
             />
           </label>
         )}

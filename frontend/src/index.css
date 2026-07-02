@@ -10,11 +10,16 @@
   --border-strong: #d8dadd;
   --divider: #eaecef;
 
-  --banner-bg-start: #ffe5dc;
-  --banner-bg-end: #fff3ed;
-  --banner-border: #f1d3c4;
+  /* Pinterest-themed brand palette */
+  --brand: #e60023;
+  --brand-hover: #ad081b;
+  --brand-soft: #f26a7e;
+
+  --banner-bg-start: #ffe1e6;
+  --banner-bg-end: #fff2f4;
+  --banner-border: #f5c6ce;
   --banner-title: #1f1f1f;
-  --banner-subtitle: #6a4a3a;
+  --banner-subtitle: #8a3a45;
 }
 
 [data-theme='dark'] {
@@ -29,11 +34,16 @@
   --border-strong: #353a42;
   --divider: #23262c;
 
-  --banner-bg-start: #3a2018;
-  --banner-bg-end: #2a1a14;
-  --banner-border: #4a2a1e;
-  --banner-title: #ffd9c7;
-  --banner-subtitle: #d9a58a;
+  /* Pinterest-themed brand palette (dark) */
+  --brand: #e60023;
+  --brand-hover: #ff3b57;
+  --brand-soft: #ff6a7d;
+
+  --banner-bg-start: #3a1418;
+  --banner-bg-end: #2a1013;
+  --banner-border: #4a1e24;
+  --banner-title: #ffd1d8;
+  --banner-subtitle: #d98a95;
 }
 
 *,

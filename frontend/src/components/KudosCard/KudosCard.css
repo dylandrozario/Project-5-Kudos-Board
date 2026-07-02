@@ -15,7 +15,7 @@
 }
 
 .kudos-card--pinned {
-  border-color: #ff6a3d;
+  border-color: var(--brand);
   box-shadow: 0 0 0 1px rgba(255, 106, 61, 0.18);
 }
 

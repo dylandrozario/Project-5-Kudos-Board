@@ -6,6 +6,7 @@ import './AuthModal.css';
 function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // email OR username, for login
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,6 +16,7 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
 
   const reset = () => {
     setEmail('');
+    setIdentifier('');
     setUsername('');
     setPassword('');
     setError(null);
@@ -33,8 +35,13 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      setError('Email and password are required.');
+    const loginId = isRegister ? email.trim() : identifier.trim();
+    if (!loginId || !password) {
+      setError(
+        isRegister
+          ? 'Email and password are required.'
+          : 'Email or username and password are required.',
+      );
       return;
     }
     if (isRegister && password.length < 8) {
@@ -52,7 +59,7 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
           password,
         });
       } else {
-        await onLogin?.({ email: email.trim(), password });
+        await onLogin?.({ identifier: identifier.trim(), password });
       }
       reset();
       onClose?.();
@@ -73,16 +80,29 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
       title={isRegister ? 'Create an account' : 'Welcome back'}
     >
       <form className="auth-form" onSubmit={handleSubmit}>
-        <label className="auth-form__field">
-          <span>Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoFocus
-          />
-        </label>
+        {isRegister ? (
+          <label className="auth-form__field">
+            <span>Email</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+            />
+          </label>
+        ) : (
+          <label className="auth-form__field">
+            <span>Email or username</span>
+            <input
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              autoFocus
+            />
+          </label>
+        )}
 
         {isRegister && (
           <label className="auth-form__field">

@@ -22,10 +22,19 @@ function HomePage() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [boardPendingDelete, setBoardPendingDelete] = useState(null);
   const [isUserOpen, setIsUserOpen] = useState(false);
-  const CATEGORIES = ['All', 'Recent', 'Celebration', 'Thank you', 'Inspiration'];
 
   const isAuthenticated = !!auth;
   const currentUser = getCurrentUser();
+
+  // "My Boards" only makes sense for a signed-in user, so it's added conditionally.
+  const CATEGORIES = [
+    'All',
+    'Recent',
+    ...(isAuthenticated ? ['My Boards'] : []),
+    'Celebration',
+    'Thank you',
+    'Inspiration',
+  ];
 
   const filteredBoards = useMemo(() => {
     let list = [...boards];
@@ -34,6 +43,9 @@ function HomePage() {
       list = [...list]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 6);
+    } else if (selectedCategory === 'My Boards') {
+      // Only the signed-in user's own boards. Guests never reach here (no tab).
+      list = isAuthenticated ? list.filter((b) => b.authorId === currentUser.id) : list;
     } else if (selectedCategory !== 'All') {
       list = list.filter((b) => b.category === selectedCategory);
     }
@@ -44,7 +56,7 @@ function HomePage() {
     }
 
     return list;
-  }, [boards, selectedCategory, searchQuery]);
+  }, [boards, selectedCategory, searchQuery, isAuthenticated, currentUser.id]);
 
   const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -72,6 +84,9 @@ function HomePage() {
     logout();
     setAuth(null);
     setIsUserOpen(false);
+    // The "My Boards" tab disappears for guests — fall back to All so the
+    // grid doesn't get stuck filtering on a category that's no longer shown.
+    if (selectedCategory === 'My Boards') setSelectedCategory('All');
   };
 
   // From the account modal, a guest jumps to the sign-in form.
@@ -89,12 +104,12 @@ function HomePage() {
 
   const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
     try {
-      // Signed-in users are attributed automatically; a guest who supplies a
-      // display name gets a User upserted by the backend. Send exactly one
-      // identifier — the backend ignores authorName when authorId is present.
+      // Guests can't name themselves — they're always attributed to the shared
+      // Guest account. Only a signed-in user may supply a custom display name
+      // (upserted by the backend); otherwise they're credited to their account.
       const payload = { title, category, imageUrl };
-      if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
-      else payload.authorName = authorName;
+      if (isAuthenticated && authorName) payload.authorName = authorName;
+      else payload.authorId = currentUser.id;
 
       const response = await axios.post(`${API_BASE_URL}/boards`, payload);
       setBoards((prev) => [response.data, ...prev]);
@@ -111,7 +126,10 @@ function HomePage() {
     if (!boardPendingDelete) return;
     const id = boardPendingDelete.id;
     try {
-      await axios.delete(`${API_BASE_URL}/boards/${id}`);
+      // Send the requester so the backend can enforce owner-only deletion.
+      await axios.delete(`${API_BASE_URL}/boards/${id}`, {
+        data: { userId: currentUser.id },
+      });
       setBoards((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Failed to delete board:", err);
@@ -137,7 +155,11 @@ function HomePage() {
         selected={selectedCategory}
         onSelect={setSelectedCategory}
       />
-      <BoardGrid boards={filteredBoards} onDeleteBoard={handleRequestDeleteBoard} />
+      <BoardGrid
+        boards={filteredBoards}
+        onDeleteBoard={handleRequestDeleteBoard}
+        canDeleteBoard={(board) => board.authorId === currentUser.id}
+      />
       <ConfirmModal
         isOpen={!!boardPendingDelete}
         title={boardPendingDelete ? `Delete "${boardPendingDelete.title}"?` : ''}
@@ -151,7 +173,7 @@ function HomePage() {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onCreate={handleCreateBoard}
-        requireAuthorName={!isAuthenticated}
+        requireAuthorName={isAuthenticated}
       />
       <UserModal
         isOpen={isUserOpen}
