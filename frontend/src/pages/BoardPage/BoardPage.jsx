@@ -118,13 +118,9 @@ function BoardPage() {
     }
   };
 
-  const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
-    // Guests can't name themselves — they're always attributed to the shared
-    // Guest account. Only a signed-in user may supply a custom display name;
-    // otherwise the card is credited to their own account.
-    const payload = { title, description, gifUrl, boardId };
-    if (isAuthenticated && authorName) payload.authorName = authorName;
-    else payload.authorId = currentUser.id;
+  const handleAddCard = async ({ title, description, gifUrl }) => {
+    // Always credited to the current account (signed-in user or shared Guest).
+    const payload = { title, description, gifUrl, boardId, authorId: currentUser.id };
 
     const response = await axios.post(`${API_BASE_URL}/cards`, payload);
 
@@ -194,10 +190,8 @@ function BoardPage() {
     }
   };
 
-  const handleAddComment = async (cardId, message, authorName) => {
-    const payload = { message };
-    if (isAuthenticated && authorName) payload.authorName = authorName;
-    else payload.authorId = currentUser.id;
+  const handleAddComment = async (cardId, message) => {
+    const payload = { message, authorId: currentUser.id };
 
     const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, payload);
 
@@ -224,12 +218,9 @@ function BoardPage() {
     }
   };
 
-  const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
-    // Guests fall back to the shared Guest account; only signed-in users may
-    // supply a custom display name, else they're credited to their account.
-    const payload = { title, category, imageUrl };
-    if (isAuthenticated && authorName) payload.authorName = authorName;
-    else payload.authorId = currentUser.id;
+  const handleCreateBoard = async ({ title, category, imageUrl }) => {
+    // Always credited to the current account (signed-in user or shared Guest).
+    const payload = { title, category, imageUrl, authorId: currentUser.id };
 
     await axios.post(`${API_BASE_URL}/boards`, payload);
     // Send the user to the homepage grid so they can see their new board.
@@ -338,7 +329,6 @@ function BoardPage() {
         boardId={board.id}
         onClose={() => setIsAddCardOpen(false)}
         onCreate={handleAddCard}
-        requireAuthorName={isAuthenticated}
       />
 
       <CommentModal
@@ -347,14 +337,12 @@ function BoardPage() {
         onClose={() => setCommentsModalCardId(null)}
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
-        requireAuthorName={isAuthenticated}
       />
 
       <CreateBoardModal
         isOpen={isCreateBoardOpen}
         onClose={() => setIsCreateBoardOpen(false)}
         onCreate={handleCreateBoard}
-        requireAuthorName={isAuthenticated}
       />
 
       <UserModal

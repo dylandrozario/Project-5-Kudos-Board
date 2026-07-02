@@ -102,14 +102,12 @@ function HomePage() {
     setSearchQuery('');
   };
 
-  const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
+  const handleCreateBoard = async ({ title, category, imageUrl }) => {
     try {
-      // Guests can't name themselves — they're always attributed to the shared
-      // Guest account. Only a signed-in user may supply a custom display name
-      // (upserted by the backend); otherwise they're credited to their account.
-      const payload = { title, category, imageUrl };
-      if (isAuthenticated && authorName) payload.authorName = authorName;
-      else payload.authorId = currentUser.id;
+      // Content is always attributed to the current account: the signed-in
+      // user, or the shared Guest account (id 1) for anonymous visitors. This
+      // keeps ownership intact so "My Boards" and owner-only delete work.
+      const payload = { title, category, imageUrl, authorId: currentUser.id };
 
       const response = await axios.post(`${API_BASE_URL}/boards`, payload);
       setBoards((prev) => [response.data, ...prev]);
@@ -173,7 +171,6 @@ function HomePage() {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onCreate={handleCreateBoard}
-        requireAuthorName={isAuthenticated}
       />
       <UserModal
         isOpen={isUserOpen}
