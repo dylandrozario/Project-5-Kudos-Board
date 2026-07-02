@@ -42,7 +42,7 @@ function HomePage() {
     return list;
   }, [boards, selectedCategory, searchQuery]);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -79,15 +79,14 @@ function HomePage() {
 
   const handleCreateBoard = async ({ title, category, imageUrl, authorName }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/boards`, {
-        title,
-        category,
-        imageUrl,
-        // Owner is the signed-in user automatically; guests are attributed to
-        // the shared Guest account but may supply a display name.
-        authorId: currentUser.id,
-        authorName: isAuthenticated ? undefined : authorName,
-      });
+      // Signed-in users are attributed automatically; a guest who supplies a
+      // display name gets a User upserted by the backend. Send exactly one
+      // identifier — the backend ignores authorName when authorId is present.
+      const payload = { title, category, imageUrl };
+      if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
+      else payload.authorName = authorName;
+
+      const response = await axios.post(`${API_BASE_URL}/boards`, payload);
       setBoards((prev) => [response.data, ...prev]);
     } catch (err) {
       console.error("Failed to create board:", err);

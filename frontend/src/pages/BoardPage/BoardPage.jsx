@@ -10,7 +10,7 @@ import Footer from '../../components/Footer/Footer';
 import { getStoredAuth, getCurrentUser } from '../../auth';
 import './BoardPage.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 function sortCards(cards) {
   return [...cards].sort((a, b) => {
@@ -93,18 +93,18 @@ function BoardPage() {
   };
 
   const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
-    // Owner is the signed-in user automatically; guests are attributed to the
-    // shared Guest account but may supply a display name.
-    const authorId = currentUser.id;
-    const response = await axios.post(`${API_BASE_URL}/cards`, {
-      title,
-      description,
-      gifUrl,
-      boardId,
-      authorId,
-      authorName: isAuthenticated ? undefined : authorName,
-    });
-    const author = await fetchAuthor(response.data.authorId ?? authorId);
+    // Signed-in users are attributed automatically; a guest who supplies a
+    // display name gets a User upserted by the backend. Send exactly one
+    // identifier — resolveAuthorId ignores authorName when authorId is present.
+    const payload = { title, description, gifUrl, boardId };
+    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
+    else payload.authorName = authorName;
+
+    const response = await axios.post(`${API_BASE_URL}/cards`, payload);
+
+    // Backend includes { author: true } on create; fallback fetch only if missing.
+    const author =
+      response.data.author ?? (await fetchAuthor(response.data.authorId));
     const created = {
       ...response.data,
       author,
@@ -169,13 +169,15 @@ function BoardPage() {
   };
 
   const handleAddComment = async (cardId, message, authorName) => {
-    const authorId = currentUser.id;
-    const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, {
-      message,
-      authorId,
-      authorName: isAuthenticated ? undefined : authorName,
-    });
-    const author = await fetchAuthor(response.data.authorId ?? authorId);
+    const payload = { message };
+    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
+    else payload.authorName = authorName;
+
+    const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, payload);
+
+    // Backend includes { author: true } on create; fallback fetch only if missing.
+    const author =
+      response.data.author ?? (await fetchAuthor(response.data.authorId));
     const newComment = { ...response.data, author };
     updateCards((cards) =>
       cards.map((c) =>

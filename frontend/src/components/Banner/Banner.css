@@ -1,7 +1,8 @@
 .banner {
-  background: linear-gradient(135deg, #ffe5dc 0%, #fff3ed 100%);
+  background: linear-gradient(135deg, var(--banner-bg-start) 0%, var(--banner-bg-end) 100%);
   padding: 12px 20px;
-  border-bottom: 1px solid #f1d3c4;
+  border-bottom: 1px solid var(--banner-border);
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
 .banner__content {
@@ -14,12 +15,12 @@
 .banner__title {
   margin: 0;
   font-size: 14px;
-  color: #1f1f1f;
+  color: var(--banner-title);
   font-weight: 700;
 }
 
 .banner__subtitle {
   margin: 0;
-  color: #6a4a3a;
+  color: var(--banner-subtitle);
   font-size: 13px;
 }

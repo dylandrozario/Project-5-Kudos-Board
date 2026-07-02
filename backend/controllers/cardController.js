@@ -2,6 +2,28 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
+const GUEST_USER_ID = 1;
+
+// Resolves an incoming author reference to a numeric User.id.
+// Preference order: explicit authorId → look up / upsert by authorName → Guest user.
+async function resolveAuthorId({ authorId, authorName }) {
+  if (typeof authorId === "number") return authorId;
+  if (authorName && authorName.trim()) {
+    const name = authorName.trim();
+    const user = await prisma.user.upsert({
+      where: { username: name },
+      update: {},
+      create: {
+        username: name,
+        email: `${name.toLowerCase().replace(/\s+/g, "-")}@kudos.local`,
+        password: "changeme",
+      },
+    });
+    return user.id;
+  }
+  return GUEST_USER_ID;
+}
+
 // GET /cards/:id — includes author and comments; based on id
 async function getCardById(req, res) {
   try {
@@ -28,11 +50,14 @@ async function createCard(req, res) {
   // Extracts information about the cards and uses this to create them;
   // returns error if required fields are not there and for bad requests
   try {
-    const { title, description, gifUrl, boardId, authorId } = req.body;
+    const { title, description, gifUrl, boardId, authorId, authorName } =
+      req.body;
 
     if (!title || !gifUrl || !boardId) {
       return res.status(400).json({ error: "Cannot create card." });
     }
+
+    const resolvedAuthorId = await resolveAuthorId({ authorId, authorName });
 
     const card = await prisma.card.create({
       data: {
@@ -40,9 +65,9 @@ async function createCard(req, res) {
         description: description || null,
         gifUrl,
         boardId: Number(boardId),
-        authorId,
+        authorId: resolvedAuthorId,
       },
-      include: { comments: true },
+      include: { author: true, comments: true },
     });
 
     res.status(201).json(card);
@@ -118,14 +143,17 @@ async function createCardComment(req, res) {
   // Creates cards with authors (or guest authors); returns 201 if successful PUT request or 400 if not
   try {
     const cardId = Number(req.params.id);
-    const { message, authorId } = req.body;
+    const { message, authorId, authorName } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Cannot create a comment." });
     }
 
+    const resolvedAuthorId = await resolveAuthorId({ authorId, authorName });
+
     const comment = await prisma.comment.create({
-      data: { message, cardId, authorId },
+      data: { message, cardId, authorId: resolvedAuthorId },
+      include: { author: true },
     });
 
     res.status(201).json(comment);
