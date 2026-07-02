@@ -8,8 +8,10 @@ import AddCardModal from '../../components/AddCardModal/AddCardModal';
 import CommentModal from '../../components/CommentModal/CommentModal';
 import CreateBoardModal from '../../components/CreateBoardModal/CreateBoardModal';
 import DeleteButton from '../../components/DeleteButton/DeleteButton';
+import UserModal from '../../components/UserModal/UserModal';
+import AuthModal from '../../components/AuthModal/AuthModal';
 import Footer from '../../components/Footer/Footer';
-import { getStoredAuth, getCurrentUser } from '../../auth';
+import { getStoredAuth, getCurrentUser, login, register, logout } from '../../auth';
 import './BoardPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
@@ -38,10 +40,31 @@ function BoardPage() {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [commentsModalCardId, setCommentsModalCardId] = useState(null);
+  const [auth, setAuth] = useState(getStoredAuth); // { token, user } | null
+  const [isUserOpen, setIsUserOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   // Owner is the signed-in user; falls back to the shared Guest account.
-  const isAuthenticated = !!getStoredAuth();
+  const isAuthenticated = !!auth;
   const currentUser = getCurrentUser();
+
+  // These wrap the auth helpers so local state updates and the page re-renders.
+  const handleLogin = async (credentials) => setAuth(await login(credentials));
+  const handleRegister = async (fields) => setAuth(await register(fields));
+
+  const handleUserClick = () => setIsUserOpen(true);
+
+  const handleLogout = () => {
+    logout();
+    setAuth(null);
+    setIsUserOpen(false);
+  };
+
+  // From the account modal, a guest jumps to the sign-in form.
+  const handleOpenAuth = () => {
+    setIsUserOpen(false);
+    setIsAuthOpen(true);
+  };
 
   useEffect(() => {
     const fetchBoard = async () => {
@@ -235,6 +258,7 @@ function BoardPage() {
           onSearchSubmit={() => {}}
           onSearchClear={() => {}}
           onCreateBoard={() => setIsCreateBoardOpen(true)}
+          showSearchBar={false}
           user={currentUser}
         />
         <main className="board-page__loading">Loading board…</main>
@@ -254,6 +278,7 @@ function BoardPage() {
           onSearchSubmit={() => {}}
           onSearchClear={() => {}}
           onCreateBoard={() => setIsCreateBoardOpen(true)}
+          showSearchBar={false}
           user={currentUser}
         />
         <main className="board-page__missing">
@@ -275,7 +300,9 @@ function BoardPage() {
         onSearchSubmit={() => {}}
         onSearchClear={() => {}}
         onCreateBoard={() => setIsCreateBoardOpen(true)}
+        showSearchBar={false}
         user={currentUser}
+        onUserClick={handleUserClick}
       />
 
       <BoardBanner
@@ -323,6 +350,22 @@ function BoardPage() {
         onClose={() => setIsCreateBoardOpen(false)}
         onCreate={handleCreateBoard}
         requireAuthorName={!isAuthenticated}
+      />
+
+      <UserModal
+        isOpen={isUserOpen}
+        onClose={() => setIsUserOpen(false)}
+        user={currentUser}
+        isAuthenticated={isAuthenticated}
+        onLogin={handleOpenAuth}
+        onLogout={handleLogout}
+      />
+
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
       />
 
       <Footer />

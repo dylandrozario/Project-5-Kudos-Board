@@ -14,6 +14,8 @@ function Header({
   onSearchSubmit,
   onSearchClear,
   onCreateBoard,
+  showCreateButton = true,
+  showSearchBar = true,
   user,
   onUserClick,
 }) {
@@ -21,14 +23,16 @@ function Header({
     <header className="header">
       {showBackButton && <BackButton onClick={onBack} />}
       <Logo />
-      <SearchBar
-        value={searchInput}
-        onChange={onSearchInputChange}
-        onSubmit={onSearchSubmit}
-        onClear={onSearchClear}
-      />
+      {showSearchBar && (
+        <SearchBar
+          value={searchInput}
+          onChange={onSearchInputChange}
+          onSubmit={onSearchSubmit}
+          onClear={onSearchClear}
+        />
+      )}
       <div className="header__actions">
-        <CreateBoardButton onClick={onCreateBoard} />
+        {showCreateButton && <CreateBoardButton onClick={onCreateBoard} />}
         <ThemeToggle />
         <UserAvatar user={user} onClick={onUserClick} />
       </div>
