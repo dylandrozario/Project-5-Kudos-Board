@@ -5,7 +5,7 @@ import GiphyPicker from '../GiphyPicker/GiphyPicker';
 import './AddCardModal.css';
 
 // `boardId` is accepted to match the planning spec; the backend infers it from the route.
-function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
+function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate, requireAuthorName = false }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [gifUrl, setGifUrl] = useState('');
@@ -81,15 +81,17 @@ function AddCardModal({ isOpen, boardId: _boardId, onClose, onCreate }) {
           <GiphyPicker value={gifUrl} onChange={setGifUrl} />
         </div>
 
-        <label className="add-card-form__field">
-          <span>Author (optional)</span>
-          <input
-            type="text"
-            value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-            placeholder="Leave blank to post as Guest"
-          />
-        </label>
+        {requireAuthorName && (
+          <label className="add-card-form__field">
+            <span>Your name (optional)</span>
+            <input
+              type="text"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Anonymous"
+            />
+          </label>
+        )}
 
         {error && <p className="add-card-form__error">{error}</p>}
 

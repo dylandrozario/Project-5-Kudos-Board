@@ -7,6 +7,7 @@ import CardGrid from '../../components/CardGrid/CardGrid';
 import AddCardModal from '../../components/AddCardModal/AddCardModal';
 import CommentModal from '../../components/CommentModal/CommentModal';
 import Footer from '../../components/Footer/Footer';
+import { getStoredAuth, getCurrentUser } from '../../auth';
 import './BoardPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
@@ -35,7 +36,9 @@ function BoardPage() {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [commentsModalCardId, setCommentsModalCardId] = useState(null);
 
-  const currentUser = { id: 1, email: 'guest@kudos.local', username: 'Guest' };
+  // Owner is the signed-in user; falls back to the shared Guest account.
+  const isAuthenticated = !!getStoredAuth();
+  const currentUser = getCurrentUser();
 
   useEffect(() => {
     const fetchBoard = async () => {
@@ -90,11 +93,12 @@ function BoardPage() {
   };
 
   const handleAddCard = async ({ title, description, gifUrl, authorName }) => {
-    // Send authorName when provided so the backend can upsert a User;
-    // otherwise fall back to the current (Guest) user's id.
+    // Signed-in users are attributed automatically; a guest who supplies a
+    // display name gets a User upserted by the backend. Send exactly one
+    // identifier — resolveAuthorId ignores authorName when authorId is present.
     const payload = { title, description, gifUrl, boardId };
-    if (authorName) payload.authorName = authorName;
-    else payload.authorId = currentUser.id;
+    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
+    else payload.authorName = authorName;
 
     const response = await axios.post(`${API_BASE_URL}/cards`, payload);
 
@@ -166,8 +170,8 @@ function BoardPage() {
 
   const handleAddComment = async (cardId, message, authorName) => {
     const payload = { message };
-    if (authorName) payload.authorName = authorName;
-    else payload.authorId = currentUser.id;
+    if (isAuthenticated || !authorName) payload.authorId = currentUser.id;
+    else payload.authorName = authorName;
 
     const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, payload);
 
@@ -269,6 +273,7 @@ function BoardPage() {
         boardId={board.id}
         onClose={() => setIsAddCardOpen(false)}
         onCreate={handleAddCard}
+        requireAuthorName={!isAuthenticated}
       />
 
       <CommentModal
@@ -277,6 +282,7 @@ function BoardPage() {
         onClose={() => setCommentsModalCardId(null)}
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
+        requireAuthorName={!isAuthenticated}
       />
 
       <Footer />

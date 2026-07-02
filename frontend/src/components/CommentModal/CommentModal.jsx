@@ -3,7 +3,7 @@ import CommentItem from '../CommentItem/CommentItem';
 import CommentForm from '../CommentForm/CommentForm';
 import './CommentModal.css';
 
-function CommentModal({ isOpen, card, onClose, onAddComment, onDeleteComment }) {
+function CommentModal({ isOpen, card, onClose, onAddComment, onDeleteComment, requireAuthorName = false }) {
   if (!card) return null;
 
   const comments = card.comments ?? [];
@@ -37,7 +37,11 @@ function CommentModal({ isOpen, card, onClose, onAddComment, onDeleteComment }) 
             </ul>
           )}
 
-          <CommentForm cardId={card.id} onSubmit={onAddComment} />
+          <CommentForm
+            cardId={card.id}
+            onSubmit={onAddComment}
+            requireAuthorName={requireAuthorName}
+          />
         </section>
       </div>
     </Modal>
