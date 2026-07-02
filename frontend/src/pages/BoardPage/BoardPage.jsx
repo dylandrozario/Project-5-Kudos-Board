@@ -9,7 +9,7 @@ import CommentModal from '../../components/CommentModal/CommentModal';
 import Footer from '../../components/Footer/Footer';
 import './BoardPage.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 function sortCards(cards) {
   return [...cards].sort((a, b) => {

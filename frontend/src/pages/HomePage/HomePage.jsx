@@ -37,7 +37,7 @@ function HomePage() {
     return list;
   }, [boards, selectedCategory, searchQuery]);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
   useEffect(() => {
     const fetchBoards = async () => {
